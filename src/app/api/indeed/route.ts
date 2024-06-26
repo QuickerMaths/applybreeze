@@ -10,12 +10,14 @@ export async function GET(request: Request): Promise<Response> {
 
     const role = searchParams.get('role') ?? '';
     const location = searchParams.get('location') ?? '';
+    const limit = searchParams.get('limit') ?? '5';
+    const country = searchParams.get('country') ?? 'US';
 
     const input = {
         "position": role, 
-        "country": "US",
+        "country": country,
         "location": location,
-        "maxItems": 5,
+        "maxItems": limit,
         "parseCompanyDetails": false,
         "saveOnlyUniqueItems": true,
         "followApplyRedirects": true,

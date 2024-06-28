@@ -4,7 +4,6 @@ import {
     serial,
     varchar,
     integer,
-    text,
     date,
     timestamp,
     pgEnum,
@@ -31,6 +30,7 @@ export const Jobs = pgTable('Jobs', {
         seniorityLevelId: integer('seniority_level_id').references(() => JobSeniorityLevels.id),
         companyId: integer('company_id').references(() => Companies.id),
         description: text('description'),
+    salary: varchar('salary', { length: 255 }),
     postedDate: date('posted_date'),
     url: varchar('url', { length: 1024 }),
 });

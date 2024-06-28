@@ -2,8 +2,8 @@ import { z } from 'zod';
 
 const indeedJobSchema = z.object({
   positionName: z.string(),
-  salary: z.string(),
-  jobType: z.array(z.string()),
+  salary: z.string().nullable(),
+  jobType: z.array(z.string().nullable()),
   company: z.string(),
   location: z.string(),
   rating: z.number().min(0).max(5),
@@ -14,13 +14,13 @@ const indeedJobSchema = z.object({
   postedAt: z.string(),
   scrapedAt: z.string().datetime(),
   postingDateParsed: z.string().datetime(),
-  description: z.string(),
-  descriptionHTML: z.string(),
-  externalApplyLink: z.string().url(),
+  description: z.string().nullable(),
+  descriptionHTML: z.string().nullable(),
+  externalApplyLink: z.string().url().nullable(),
   searchInput: z.object({
     position: z.string(),
     location: z.string(),
-    country: z.string().length(2),
+    country: z.string(),
   }),
   isExpired: z.boolean(),
 });

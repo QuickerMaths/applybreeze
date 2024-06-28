@@ -1,6 +1,7 @@
 import { ApifyClient } from 'apify-client';
 import { validateJobs } from '~/lib/validateJobs';
 import { querySchema, indeedJobSchema } from '~/types/indeed';
+import { validateQueryParams } from '~/lib/validateQueryParams';
 
 const client = new ApifyClient({
     token: process.env.APIFY_TOKEN,
@@ -8,20 +9,13 @@ const client = new ApifyClient({
 
 
 export async function GET(request: Request): Promise<Response> {
-    const { searchParams } = new URL(request.url);
-
-    const role = searchParams.get('role');
-    const location = searchParams.get('location');
-    const limit = searchParams.get('limit');
-    const country = searchParams.get('country');
-
-    const validatedQuery = querySchema.safeParse({ role, location, limit, country });
+    const validatedQuery = validateQueryParams(request.url, querySchema);
 
     const input = {
-        "position": validatedQuery.data?.role, 
-        "country": validatedQuery.data?.country,
-        "location": validatedQuery.data?.location,
-        "maxItems": validatedQuery.data?.limit,
+        "position": validatedQuery.role, 
+        "country": validatedQuery.country,
+        "location": validatedQuery.location,
+        "maxItems": validatedQuery.limit,
         "parseCompanyDetails": false,
         "saveOnlyUniqueItems": true,
         "followApplyRedirects": true,

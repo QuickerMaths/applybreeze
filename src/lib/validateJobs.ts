@@ -1,11 +1,13 @@
-import type { indeedJobSchema } from '../types/indeed';
+import type { z, ZodTypeAny } from 'zod';
 
-export function validateJobs(jobs: Record<string | number, unknown>[], schema: typeof indeedJobSchema): Record<string | number, unknown>[] {
-    return jobs.filter(job => {
+export function validateJobs<T extends ZodTypeAny>(data: unknown[], schema: T): z.infer<T>[] | null {
+    return data.map((job) => {
         const result = schema.safeParse(job);
 
-        if(result.success) {
-            return job;
+        if(!result.success) {
+            return null;
         }
+
+        return job;
     });
 }

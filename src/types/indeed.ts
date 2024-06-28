@@ -3,11 +3,11 @@ import { z } from 'zod';
 const indeedJobSchema = z.object({
   positionName: z.string(),
   salary: z.string().nullable(),
-  jobType: z.array(z.string().nullable()),
+  jobType: z.array(z.string().nullable()).nullable(),
   company: z.string(),
   location: z.string(),
-  rating: z.number().min(0).max(5),
-  reviewsCount: z.number().nonnegative(),
+  rating: z.number().min(0).max(5).nullable(),
+  reviewsCount: z.number().nonnegative().nullable(),
   urlInput: z.string().nullable(),
   url: z.string().url(),
   id: z.string(),
@@ -24,6 +24,8 @@ const indeedJobSchema = z.object({
   }),
   isExpired: z.boolean(),
 });
+
+export type IndeedJob = z.infer<typeof indeedJobSchema>;
 
 const querySchema = z.object({
   role: z.string().optional().default(''),

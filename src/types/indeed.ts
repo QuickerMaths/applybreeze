@@ -25,7 +25,11 @@ const indeedJobSchema = z.object({
   isExpired: z.boolean(),
 });
 
+const querySchema = z.object({
+  role: z.string().optional().default(''),
+  location: z.string().optional().default(''),
+  limit: z.preprocess((value) => Number(value), z.number().int().max(50).positive().optional().default(5)),
+  country: z.string().length(2).optional().default('US'),
+});
 
-export type IndeedJobType = z.infer<typeof indeedJobSchema>;
-
-export default indeedJobSchema;
+export { indeedJobSchema, querySchema };

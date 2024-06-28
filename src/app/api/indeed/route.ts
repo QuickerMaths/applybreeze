@@ -10,7 +10,7 @@ export async function GET(request: Request): Promise<Response> {
 
     const role = searchParams.get('role') ?? '';
     const location = searchParams.get('location') ?? '';
-    const limit = searchParams.get('limit') ?? '5';
+    const limit = searchParams.get('limit') ?? 5;
     const country = searchParams.get('country') ?? 'US';
 
     const input = {
@@ -28,9 +28,13 @@ export async function GET(request: Request): Promise<Response> {
 
     try {
         const { items } = await client.dataset(run.defaultDatasetId).listItems();
-        return Response.json(items);
-    } catch (error) {
-        return new Response(error.message, { status: 500 });
-    }
 
+        return Response.json(items);
+    } catch (error: unknown) {
+        if (error instanceof Error) {
+            return new Response(error.message, { status: 500 });
+        }
+
+        return new Response('Server internal error', { status: 500 });
+    }
 }

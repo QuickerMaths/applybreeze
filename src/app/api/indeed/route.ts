@@ -1,9 +1,11 @@
 import { ApifyClient } from 'apify-client';
-
+import { validateJobs } from '~/lib/validateJobs';
+import indeedJobSchema from '~/types/indeed';
 
 const client = new ApifyClient({
     token: process.env.APIFY_TOKEN,
 });
+
 
 export async function GET(request: Request): Promise<Response> {
     const { searchParams } = new URL(request.url);
@@ -29,7 +31,9 @@ export async function GET(request: Request): Promise<Response> {
     try {
         const { items } = await client.dataset(run.defaultDatasetId).listItems();
 
-        return Response.json(items);
+        const validatedJobs = validateJobs(items, indeedJobSchema);
+
+        return Response.json(validatedJobs);
     } catch (error: unknown) {
         if (error instanceof Error) {
             return new Response(error.message, { status: 500 });

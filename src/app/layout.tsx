@@ -1,6 +1,7 @@
 import "~/styles/globals.css";
 
 import { Roboto_Flex } from "next/font/google";
+import Navbar from "~/components/navbar/Navbar";
 
 export const metadata = {
   title: "ApplyBreeze",
@@ -21,7 +22,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={roboto_flex.className}>
-      <body>{children}</body>
+      <body className="text-white">
+        <Navbar />
+        {children}
+      </body>
     </html>
   );
 }

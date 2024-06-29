@@ -2,6 +2,7 @@ import React from "react";
 import { TypographyH3 } from "../typography/typography";
 import { Button } from "../ui/button";
 import { ModeToggle } from "../mode-toggle/mode-toggle";
+import Link from "next/link";
 
 export default function Navbar() {
   return (
@@ -10,14 +11,19 @@ export default function Navbar() {
       <nav>
         <ul className="flex items-center space-x-5">
           <li>
-            <a href="#" className="text-secondary">
-              Jobs
-            </a>
+            <Link href="/" className="text-secondary">
+              Home
+            </Link>
           </li>
           <li>
-            <a href="#" className="text-secondary">
+            <Link href="/jobs" className="text-secondary">
+              Jobs
+            </Link>
+          </li>
+          <li>
+            <Link href="/applications" className="text-secondary">
               Applications
-            </a>
+            </Link>
           </li>
         </ul>
       </nav>

@@ -4,7 +4,7 @@ import { querySchema, indeedJobSchema } from '~/types/indeed';
 import type { IndeedJob } from '~/types/indeed';
 import { db } from '~/server/db';
 import { validateQueryParams } from '~/lib/validateQueryParams';
-import { Companies, JobLocations, Jobs, JobSeniorityLevels, JobSources, JobTitles } from '~/server/db/schema';
+import { Jobs } from '~/server/db/schema';
 
 const client = new ApifyClient({
     token: process.env.APIFY_TOKEN,

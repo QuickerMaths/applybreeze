@@ -3,11 +3,12 @@ import "~/styles/globals.css";
 import { Roboto_Flex } from "next/font/google";
 import Navbar from "~/components/navbar/Navbar";
 import { ThemeProvider } from "next-themes";
+import { ClerkProvider } from "@clerk/nextjs";
 
 export const metadata = {
-  title: "ApplyBreeze",
-  description: "Make your application breeze with ApplyBreeze",
-  icons: [{ rel: "icon", url: "/favicon.ico" }],
+    title: "ApplyBreeze",
+    description: "Make your application breeze with ApplyBreeze",
+    icons: [{ rel: "icon", url: "/favicon.ico" }],
 };
 
 const roboto_flex = Roboto_Flex({
@@ -17,23 +18,25 @@ const roboto_flex = Roboto_Flex({
 });
 
 export default function RootLayout({
-  children,
+    children,
 }: {
-  children: React.ReactNode;
+    children: React.ReactNode;
 }) {
-  return (
-    <html lang="en" className={roboto_flex.className}>
-        <body className="text-white">
-        <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
-        >
-            <Navbar />
-            {children}
-        </ThemeProvider>
-        </body>
-    </html>
-  );
+    return (
+        <ClerkProvider>
+            <html lang="en" className={roboto_flex.className}>
+                <body className="text-white">
+                    <ThemeProvider
+                        attribute="class"
+                        defaultTheme="system"
+                        enableSystem
+                        disableTransitionOnChange
+                    >
+                        <Navbar />
+                        {children}
+                    </ThemeProvider>
+                </body>
+            </html>
+        </ClerkProvider>
+    );
 }

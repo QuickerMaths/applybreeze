@@ -3,6 +3,7 @@ import { ModeToggle } from "../mode-toggle/mode-toggle";
 import Link from "next/link";
 import { MobileMenu } from "../mobile-menu/mobile-menu";
 import { SignedOut, SignInButton, SignedIn, UserButton } from "@clerk/nextjs";
+import { Button } from "../ui/button";
 
 export default function Navbar() {
     return (
@@ -29,7 +30,11 @@ export default function Navbar() {
             </nav>
             <div className="flex items-center justify-center gap-5">
                 <SignedOut>
-                    <SignInButton />
+                    <SignInButton>
+                        <Button className="text-black dark:bg-white" variant="outline">
+                            Sign In
+                        </Button>
+                    </SignInButton>
                 </SignedOut>
                 <SignedIn>
                     <UserButton />

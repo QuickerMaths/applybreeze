@@ -9,16 +9,15 @@ import {
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 
-// Users Table (unchanged)
 export const Users = pgTable("Users", {
   id: serial("id").primaryKey(),
+  firstName: varchar("first_name", { length: 255 }),
+  lastName: varchar("last_name", { length: 255 }),
   username: varchar("username", { length: 255 }).notNull().unique(),
   email: varchar("email", { length: 255 }).notNull().unique(),
-  passwordHash: varchar("password_hash", { length: 255 }).notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
 });
 
-// Jobs Table (unchanged)
 export const Jobs = pgTable("Jobs", {
   id: serial("id").primaryKey(),
   title: varchar("title", { length: 255 }).notNull(),
@@ -33,46 +32,39 @@ export const Jobs = pgTable("Jobs", {
   url: varchar("url", { length: 1024 }),
 });
 
-// JobFilters Table (unchanged)
 export const JobFilters = pgTable("JobFilters", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").references(() => Users.id),
-  title: varchar("title", { length: 255 }),
+  userId: varchar("user_id", { length: 255 }).references(() => Users.id),
+  role: varchar("role", { length: 255 }),
   city: varchar("city", { length: 255 }),
-  state: varchar("state", { length: 255 }),
   country: varchar("country", { length: 255 }),
   seniorityLevel: varchar("seniority_level", { length: 255 }),
-  keywords: varchar("keywords", { length: 255 }),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
 });
 
-// Applications Table (unchanged)
 export const Applications = pgTable("Applications", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").references(() => Users.id),
+  userId: varchar("user_id", { length: 255 }).references(() => Users.id),
   jobId: integer("job_id").references(() => Jobs.id),
   status: varchar("status", { length: 50 }),
   appliedDate: timestamp("applied_date", { withTimezone: true }).defaultNow(),
 });
 
-// Updated: SavedSearches
 export const SavedSearches = pgTable("SavedSearches", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").references(() => Users.id),
-  jobFilterId: integer("job_filter_id").references(() => JobFilters.id), // New field
+  userId: varchar("user_id", { length: 255 }).references(() => Users.id),
+  jobFilterId: integer("job_filter_id").references(() => JobFilters.id),
   savedAt: timestamp("saved_at", { withTimezone: true }).defaultNow(),
   expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
   isExtended: boolean("is_extended").default(false),
 });
 
-// SavedSearchJobs (junction table, unchanged)
 export const SavedSearchJobs = pgTable("SavedSearchJobs", {
   id: serial("id").primaryKey(),
   savedSearchId: integer("saved_search_id").references(() => SavedSearches.id),
   jobId: integer("job_id").references(() => Jobs.id),
 });
 
-// Relations
 export const userRelations = relations(Users, ({ many }) => ({
   jobFilters: many(JobFilters),
   applications: many(Applications),

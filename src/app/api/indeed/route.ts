@@ -11,7 +11,6 @@ import {
 } from "~/server/db/schema";
 import { indeedSearchSchema, indeedJobSchema } from "~/schemas/indeed";
 import { sql } from "drizzle-orm";
-import { useUser } from "@clerk/nextjs";
 
 interface SaveJobSearchParams {
   jobs: IndeedJob[];
@@ -28,12 +27,6 @@ const client = new ApifyClient({
 });
 
 export async function GET(request: Request): Promise<Response> {
-  const user = useUser();
-
-  if (!user.isSignedIn) {
-    return new Response("Unauthorized", { status: 401 });
-  }
-
   const validatedQuery = validateQueryParams(request.url, indeedSearchSchema);
 
   const input = {
@@ -57,7 +50,7 @@ export async function GET(request: Request): Promise<Response> {
     if (validatedJobs.length > 0) {
       await saveJobSearchResults({
         jobs: validatedJobs,
-        userId: user.user?.id,
+        userId: "some-user-id",
         searchCriteria: validatedQuery,
       });
 

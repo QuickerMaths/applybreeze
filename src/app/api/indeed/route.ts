@@ -11,6 +11,8 @@ import {
 } from "~/server/db/schema";
 import { indeedSearchSchema, indeedJobSchema } from "~/schemas/indeed";
 import { sql } from "drizzle-orm";
+import { getAuth } from "@clerk/nextjs/server";
+import type { NextApiRequest } from "next";
 
 interface SaveJobSearchParams {
   jobs: IndeedJob[];
@@ -26,7 +28,13 @@ const client = new ApifyClient({
   token: process.env.APIFY_TOKEN,
 });
 
-export async function GET(request: Request): Promise<Response> {
+export async function POST(request: NextApiRequest): Promise<Response> {
+  const { userId } = getAuth(request);
+
+  if (!userId) {
+    return new Response("Unauthorized", { status: 401 });
+  }
+
   const validatedQuery = validateQueryParams(request.url, indeedSearchSchema);
 
   const input = {
@@ -50,7 +58,7 @@ export async function GET(request: Request): Promise<Response> {
     if (validatedJobs.length > 0) {
       await saveJobSearchResults({
         jobs: validatedJobs,
-        userId: "some-user-id",
+        userId,
         searchCriteria: validatedQuery,
       });
 

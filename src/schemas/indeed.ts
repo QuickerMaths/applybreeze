@@ -13,7 +13,6 @@ const indeedJobSchema = z.object({
   id: z.string(),
   postedAt: z.string(),
   scrapedAt: z.string().datetime(),
-  postingDateParsed: z.string().datetime(),
   description: z.string().nullable(),
   descriptionHTML: z.string().nullable(),
   externalApplyLink: z.string().url().nullable(),

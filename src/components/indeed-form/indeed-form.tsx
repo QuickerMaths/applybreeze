@@ -14,10 +14,16 @@ import {
 } from "../ui/form";
 import { Input } from "../ui/input";
 import { indeedSearchSchema } from "~/schemas/indeed";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { getJobs } from "~/server/mutations/jobs-mutation";
 
-export default function IndeedForm() {
+interface IndeedFormProps {
+  userId: string;
+}
+
+export default function IndeedForm({ userId }: IndeedFormProps) {
+  const queryClient = useQueryClient();
+
   const form = useForm<z.infer<typeof indeedSearchSchema>>({
     resolver: zodResolver(indeedSearchSchema),
     defaultValues: {
@@ -31,6 +37,11 @@ export default function IndeedForm() {
   const mutation = useMutation({
     mutationFn: (values: z.infer<typeof indeedSearchSchema>) =>
       getJobs(values, "indeed"),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: ["searchResults", userId],
+      });
+    },
   });
 
   function onSubmit(values: z.infer<typeof indeedSearchSchema>) {
@@ -102,6 +113,7 @@ export default function IndeedForm() {
           Submit
         </Button>
       </form>
+      <p>{mutation.isPending ? "Loading..." : null}</p>
     </Form>
   );
 }

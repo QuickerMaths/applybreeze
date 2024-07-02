@@ -1,14 +1,41 @@
+import React from "react";
 import IndeedForm from "~/components/indeed-form/indeed-form";
+import { getSearchResults } from "~/server/queries/jobs-queries";
+import { auth } from "@clerk/nextjs/server";
 import {
-  TypographyH1,
-  TypographyH3,
-  TypographyP,
-} from "~/components/typography/typography";
+  dehydrate,
+  HydrationBoundary,
+  QueryClient,
+} from "@tanstack/react-query";
+import SearchResults from "~/components/search-results/search-results";
 
-export default function Indeed() {
+export default async function Indeed() {
+  const { userId } = auth();
+
+  if (!userId) {
+    return {
+      redirect: {
+        destination: "/",
+        permanent: false,
+      },
+    };
+  }
+
+  const queryClient = new QueryClient();
+
+  const initialData = await getSearchResults(userId);
+
+  await queryClient.prefetchQuery({
+    queryKey: ["searchResults", userId],
+    queryFn: () => Promise.resolve(initialData),
+  });
+
   return (
     <main className="my-10 flex min-h-screen flex-col items-center bg-background dark:bg-background">
-      <IndeedForm />
+      <IndeedForm userId={userId} />
+      <HydrationBoundary state={dehydrate(queryClient)}>
+        <SearchResults userId={userId} initialData={initialData.reverse()} />
+      </HydrationBoundary>
     </main>
   );
 }

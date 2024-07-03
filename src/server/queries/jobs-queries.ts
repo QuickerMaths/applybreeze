@@ -36,7 +36,6 @@ export async function deleteSearchResults(searchResultsId: number) {
 
   if (jobIds.length > 0) {
     await db.delete(Jobs).where(
-      //@ts-expect-error - inArray is not typed correctly
       inArray(
         Jobs.id,
         jobIds.map((job) => job.jobId),

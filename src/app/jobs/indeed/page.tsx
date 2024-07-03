@@ -1,16 +1,16 @@
 import React from "react";
 import IndeedForm from "~/components/indeed-form/indeed-form";
 import { getSearchResults } from "~/server/queries/jobs-queries";
-import { auth } from "@clerk/nextjs/server";
 import {
   dehydrate,
   HydrationBoundary,
   QueryClient,
 } from "@tanstack/react-query";
 import SearchResults from "~/components/search-results/search-results";
+import { getCurrentUserId } from "~/lib/getCurrentUser";
 
 export default async function Indeed() {
-  const { userId } = auth();
+  const userId = await getCurrentUserId();
 
   if (!userId) {
     return {

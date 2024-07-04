@@ -1,9 +1,11 @@
-import { db } from "~/server/db";
 import { Webhook } from "svix";
 import { headers } from "next/headers";
-import type { UserJSON, WebhookEvent } from "@clerk/nextjs/server";
-import { Users } from "~/server/db/schema";
-import { eq } from "drizzle-orm";
+import type { WebhookEvent } from "@clerk/nextjs/server";
+import {
+  saveUser,
+  updateUser,
+  deleteUser,
+} from "~/server/queries/jobs-queries";
 
 export async function POST(req: Request) {
   const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET;
@@ -51,69 +53,14 @@ export async function POST(req: Request) {
 
   if (eventType === "user.created") {
     await saveUser(evt);
+    return new Response("OK", { status: 201 });
   } else if (eventType === "user.updated" && id) {
     await updateUser(evt, id);
+    return new Response("OK", { status: 200 });
   } else if (eventType === "user.deleted" && id) {
     await deleteUser(id);
+    return new Response("OK", { status: 204 });
   }
 
   return new Response("Server internal error", { status: 500 });
-}
-
-async function saveUser(payload: WebhookEvent) {
-  const user = payload.data as UserJSON;
-
-  const email = user.email_addresses.find(
-    (email) => email.id === user.primary_email_address_id,
-  );
-
-  if (!email) {
-    return;
-  }
-
-  await db.insert(Users).values({
-    id: user.id,
-    email: email.email_address,
-    firstName: user.first_name,
-    lastName: user.last_name,
-    username: user.username ?? null,
-    createdAt: new Date(user.created_at),
-    updatedAt: new Date(user.updated_at),
-  });
-
-  return new Response("OK", { status: 201 });
-}
-
-async function updateUser(payload: WebhookEvent, id: string) {
-  const user = payload.data as UserJSON;
-
-  const email = user.email_addresses.find(
-    (email) => email.id === user.primary_email_address_id,
-  );
-
-  if (!email) {
-    return;
-  }
-
-  await db
-    .update(Users)
-    .set({
-      id: user.id,
-      email: email.email_address,
-      firstName: user.first_name,
-      lastName: user.last_name,
-      username: user.username ?? null,
-      createdAt: new Date(user.created_at),
-      updatedAt: new Date(user.updated_at),
-    })
-    .where(eq(Users.id, id));
-
-  return new Response("OK", { status: 204 });
-}
-
-async function deleteUser(id: string) {
-  //TODO: delete data from other tables that reference this user
-  await db.delete(Users).where(eq(Users.id, id));
-
-  return new Response("OK", { status: 204 });
 }

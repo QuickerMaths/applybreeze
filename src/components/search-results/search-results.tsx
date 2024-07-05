@@ -1,42 +1,58 @@
 "use client";
 
 import React from "react";
-import { TypographyH1 } from "~/components/typography/typography";
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useInfiniteQuery } from "@tanstack/react-query";
 import { getSearchResults } from "~/server/queries/jobs-queries";
 import SearchResult from "../search-result/search-result";
+import { Button } from "../ui/button";
 
 interface SearchResultsProps {
   userId: string;
-  initialData: Awaited<ReturnType<typeof getSearchResults>>;
 }
 
-export default function SearchResults({
-  userId,
-  initialData,
-}: SearchResultsProps) {
-  const { data } = useQuery({
-    queryKey: ["searchResults", userId],
-    queryFn: () => getSearchResults(userId),
-    initialData: initialData,
-  });
+export default function SearchResults({ userId }: SearchResultsProps) {
+  const { data, hasNextPage, isFetchingNextPage, fetchNextPage } =
+    useInfiniteQuery({
+      queryKey: ["searchResults", userId],
+      queryFn: ({ pageParam }: { pageParam: number }) =>
+        getSearchResults(userId, pageParam),
+      initialPageParam: 0,
+      getNextPageParam: (lastPage, _pages) => {
+        const lastId = lastPage[lastPage.length - 1]?.id;
+        return lastId;
+      },
+      placeholderData: keepPreviousData,
+    });
 
   return (
-    <div className="mx-auto w-1/2">
-      <TypographyH1 tag="h3" className="mb-5 text-center text-4xl font-bold">
-        Search Results
-      </TypographyH1>
-      {data.length ? (
-        <ul className="flex flex-col items-center justify-center gap-y-3">
-          {data.map(({ id, jobFilter }) => (
-            <SearchResult
-              key={id}
-              jobFilter={jobFilter}
-              jobSearchId={id}
-              userId={userId}
-            />
-          ))}
-        </ul>
+    <div className="mx-auto flex w-3/4 flex-col items-center justify-center">
+      <h1 className="text-center">Search Results</h1>
+      {data?.pages ? (
+        <>
+          <ul className="flex w-full flex-col items-center justify-center gap-y-2">
+            {data.pages.map((page) =>
+              page.map((searchResult) => (
+                <SearchResult
+                  key={searchResult.id}
+                  jobFilter={searchResult.jobFilter}
+                  jobSearchId={searchResult.id}
+                  userId={userId}
+                />
+              )),
+            )}
+          </ul>
+          {hasNextPage ? (
+            <Button
+              onClick={() => fetchNextPage()}
+              className="mt-2 w-1/2"
+              disabled={isFetchingNextPage}
+            >
+              {isFetchingNextPage ? "Loading more..." : "Load more"}
+            </Button>
+          ) : (
+            <p className="mt-2 text-center">No more results</p>
+          )}
+        </>
       ) : (
         <p>No search results found</p>
       )}

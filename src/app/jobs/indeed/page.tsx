@@ -25,16 +25,24 @@ export default async function Indeed() {
 
   const initialData = await getSearchResults(userId);
 
-  await queryClient.prefetchQuery({
+  await queryClient.prefetchInfiniteQuery({
     queryKey: ["searchResults", userId],
     queryFn: () => Promise.resolve(initialData),
+    initialPageParam: initialData.length
+      ? initialData[initialData.length - 1]?.id
+      : 0,
+    getNextPageParam: (lastPage, _pages) => {
+      const lastId = lastPage[lastPage.length - 1]?.id;
+      return lastId;
+    },
+    pages: 1,
   });
 
   return (
     <main className="my-10 flex min-h-screen flex-col items-center bg-background dark:bg-background">
       <IndeedForm userId={userId} />
       <HydrationBoundary state={dehydrate(queryClient)}>
-        <SearchResults userId={userId} initialData={initialData.reverse()} />
+        <SearchResults userId={userId} />
       </HydrationBoundary>
     </main>
   );

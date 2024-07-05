@@ -12,9 +12,12 @@ import {
 import type { WebhookEvent, UserJSON } from "@clerk/nextjs/server";
 import type { SaveJobSearchParams } from "~/types/indeed";
 
-export async function getSearchResults(userId: string) {
+export async function getSearchResults(
+  userId: string,
+  cursor?: number,
+  pageSize = 10,
+) {
   return await db.query.SavedSearches.findMany({
-    where: (savedSearch, { eq }) => eq(savedSearch.userId, userId),
     with: {
       jobFilter: {
         columns: {
@@ -24,6 +27,12 @@ export async function getSearchResults(userId: string) {
         },
       },
     },
+    where: (savedSearch, { eq, lt }) =>
+      eq(savedSearch.userId, userId) && cursor
+        ? lt(savedSearch.id, cursor)
+        : undefined,
+    limit: pageSize,
+    orderBy: (savedSearch, { desc }) => desc(savedSearch.id),
   });
 }
 
@@ -147,6 +156,16 @@ export async function saveJobSearchResults({
   searchCriteria,
 }: SaveJobSearchParams) {
   return await db.transaction(async (tx) => {
+    const userExists = await tx
+      .select({ id: Users.id })
+      .from(Users)
+      .where(eq(Users.id, userId))
+      .limit(1);
+
+    if (!userExists.length) {
+      throw new Error("User not found");
+    }
+
     const jobFilter = await tx
       .insert(JobFilters)
       .values({

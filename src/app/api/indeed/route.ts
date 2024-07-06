@@ -3,14 +3,14 @@ import { validateJobs } from "~/lib/validateJobs";
 import { validateQueryParams } from "~/lib/validateQueryParams";
 import { indeedSearchSchema, indeedJobSchema } from "~/schemas/indeed";
 import { getAuth } from "@clerk/nextjs/server";
-import type { NextApiRequest } from "next";
 import { saveJobSearchResults } from "~/server/queries/jobs-queries";
+import type { NextRequest } from "next/server";
 
 const client = new ApifyClient({
   token: process.env.APIFY_TOKEN,
 });
 
-export async function POST(request: NextApiRequest): Promise<Response> {
+export async function POST(request: NextRequest): Promise<Response> {
   const { userId } = getAuth(request);
 
   if (!userId) {

@@ -26,7 +26,6 @@ export default function SearchResults({ userId }: SearchResultsProps) {
 
   return (
     <div className="mx-auto flex w-3/4 flex-col items-center justify-center">
-      <h1 className="text-center">Search Results</h1>
       {data?.pages ? (
         <>
           <ul className="flex w-full flex-col items-center justify-center gap-y-2">

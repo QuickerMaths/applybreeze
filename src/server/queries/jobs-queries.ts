@@ -41,7 +41,6 @@ export async function getSavedSearchJobs(
           country: true,
           source: true,
           companyName: true,
-          description: true,
           url: true,
           salary: true,
           seniorityLevel: true,
@@ -49,10 +48,11 @@ export async function getSavedSearchJobs(
         },
       },
     },
-    where: (savedSearchJob, { eq, lt }) =>
-      eq(savedSearchJob.savedSearchId, savedSearchId) && cursor
-        ? lt(savedSearchJob.id, cursor)
-        : undefined,
+    where: (savedSearchJob, { eq, and, lt }) =>
+      and(
+        eq(savedSearchJob.savedSearchId, savedSearchId),
+        cursor ? lt(savedSearchJob.id, cursor) : undefined,
+      ),
     limit: pageSize,
     orderBy: (savedSearchJob, { desc }) => desc(savedSearchJob.id),
   });
@@ -73,10 +73,11 @@ export async function getSearchResults(
         },
       },
     },
-    where: (savedSearch, { eq, lt }) =>
-      eq(savedSearch.userId, userId) && cursor
-        ? lt(savedSearch.id, cursor)
-        : undefined,
+    where: (savedSearch, { eq, and, lt }) =>
+      and(
+        eq(savedSearch.userId, userId),
+        cursor ? lt(savedSearch.id, cursor) : undefined,
+      ),
     limit: pageSize,
     orderBy: (savedSearch, { desc }) => desc(savedSearch.id),
   });

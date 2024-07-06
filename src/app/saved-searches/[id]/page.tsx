@@ -9,6 +9,7 @@ import {
   getSavedSearchFilters,
   getSavedSearchJobs,
 } from "~/server/queries/jobs-queries";
+import SavedSearchJobs from "~/components/saved-search-jobs/saved-search-jobs";
 
 interface SavedSearchProps {
   params: {
@@ -46,7 +47,7 @@ export default async function SavedSearch({ params }: SavedSearchProps) {
 
   return (
     <main className="my-10 flex min-h-screen flex-col items-center bg-background dark:bg-background">
-      <div className="flex flex-col items-center justify-center">
+      <div className="mb-5 flex flex-col items-center justify-center">
         <h2>Applied Job Filters</h2>
         <div className="flex items-center justify-center gap-3">
           <p className="text-2xl font-bold text-primary dark:text-primary">
@@ -60,7 +61,9 @@ export default async function SavedSearch({ params }: SavedSearchProps) {
           </p>
         </div>
       </div>
-      <HydrationBoundary state={dehydrate(queryClient)}></HydrationBoundary>
+      <HydrationBoundary state={dehydrate(queryClient)}>
+        <SavedSearchJobs userId={userId} savedSearchId={params.id} />
+      </HydrationBoundary>
     </main>
   );
 }

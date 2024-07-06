@@ -18,13 +18,12 @@ export default function SearchResults({ userId }: SearchResultsProps) {
         getSearchResults(userId, pageParam),
       initialPageParam: 0,
       getNextPageParam: (lastPage, _pages) => {
-        if (lastPage.length < 2) return undefined;
+        if (lastPage.length < 10) return undefined;
         const lastId = lastPage[lastPage.length - 1]?.id;
         return lastId;
       },
     });
 
-  console.log(data);
   return (
     <div className="mx-auto flex w-3/4 flex-col items-center justify-center">
       <h1 className="text-center">Search Results</h1>

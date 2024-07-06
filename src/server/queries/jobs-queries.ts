@@ -15,7 +15,7 @@ import type { SaveJobSearchParams } from "~/types/indeed";
 export async function getSearchResults(
   userId: string,
   cursor?: number,
-  pageSize = 10,
+  pageSize = 2,
 ) {
   return await db.query.SavedSearches.findMany({
     with: {

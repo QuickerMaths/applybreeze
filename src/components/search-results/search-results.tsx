@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { keepPreviousData, useInfiniteQuery } from "@tanstack/react-query";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import { getSearchResults } from "~/server/queries/jobs-queries";
 import SearchResult from "../search-result/search-result";
 import { Button } from "../ui/button";
@@ -11,19 +11,20 @@ interface SearchResultsProps {
 }
 
 export default function SearchResults({ userId }: SearchResultsProps) {
-  const { data, hasNextPage, isFetchingNextPage, fetchNextPage } =
+  const { data, hasNextPage, isFetchingNextPage, isFetching, fetchNextPage } =
     useInfiniteQuery({
       queryKey: ["searchResults", userId],
       queryFn: ({ pageParam }: { pageParam: number }) =>
         getSearchResults(userId, pageParam),
       initialPageParam: 0,
       getNextPageParam: (lastPage, _pages) => {
+        if (lastPage.length < 2) return undefined;
         const lastId = lastPage[lastPage.length - 1]?.id;
         return lastId;
       },
-      placeholderData: keepPreviousData,
     });
 
+  console.log(data);
   return (
     <div className="mx-auto flex w-3/4 flex-col items-center justify-center">
       <h1 className="text-center">Search Results</h1>
@@ -45,7 +46,7 @@ export default function SearchResults({ userId }: SearchResultsProps) {
             <Button
               onClick={() => fetchNextPage()}
               className="mt-2 w-1/2"
-              disabled={isFetchingNextPage}
+              disabled={isFetchingNextPage || isFetching}
             >
               {isFetchingNextPage ? "Loading more..." : "Load more"}
             </Button>

@@ -23,14 +23,11 @@ export default async function Indeed() {
 
   const queryClient = new QueryClient();
 
-  const initialData = await getSearchResults(userId);
-
   await queryClient.prefetchInfiniteQuery({
     queryKey: ["searchResults", userId],
-    queryFn: () => Promise.resolve(initialData),
-    initialPageParam: initialData.length
-      ? initialData[initialData.length - 1]?.id
-      : 0,
+    queryFn: async ({ pageParam }: { pageParam: number }) =>
+      await getSearchResults(userId, pageParam),
+    initialPageParam: 0,
     getNextPageParam: (lastPage, _pages) => {
       const lastId = lastPage[lastPage.length - 1]?.id;
       return lastId;

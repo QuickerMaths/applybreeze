@@ -18,7 +18,12 @@ export default function Navbar() {
                     </li>
                     <li>
                         <Link href="/jobs" className="text-secondary">
-                            Jobs
+                            Find Jobs
+                        </Link>
+                    </li>
+                    <li>
+                        <Link href="/saved-jobs" className="text-secondary">
+                            Saved Jobs
                         </Link>
                     </li>
                     <li>

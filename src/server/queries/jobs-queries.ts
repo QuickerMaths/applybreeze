@@ -12,6 +12,52 @@ import {
 import type { WebhookEvent, UserJSON } from "@clerk/nextjs/server";
 import type { SaveJobSearchParams } from "~/types/indeed";
 
+export async function getSavedSearchFilters(savedSearchId: number) {
+  return await db.query.SavedSearches.findFirst({
+    where: (savedSearch, { eq }) => eq(savedSearch.id, savedSearchId),
+    with: {
+      jobFilter: {
+        columns: {
+          role: true,
+          city: true,
+          country: true,
+        },
+      },
+    },
+  });
+}
+
+export async function getSavedSearchJobs(
+  savedSearchId: number,
+  cursor?: number,
+  pageSize = 10,
+) {
+  return await db.query.SavedSearchJobs.findMany({
+    with: {
+      job: {
+        columns: {
+          title: true,
+          city: true,
+          country: true,
+          source: true,
+          companyName: true,
+          description: true,
+          url: true,
+          salary: true,
+          seniorityLevel: true,
+          sourceUrl: true,
+        },
+      },
+    },
+    where: (savedSearchJob, { eq, lt }) =>
+      eq(savedSearchJob.savedSearchId, savedSearchId) && cursor
+        ? lt(savedSearchJob.id, cursor)
+        : undefined,
+    limit: pageSize,
+    orderBy: (savedSearchJob, { desc }) => desc(savedSearchJob.id),
+  });
+}
+
 export async function getSearchResults(
   userId: string,
   cursor?: number,

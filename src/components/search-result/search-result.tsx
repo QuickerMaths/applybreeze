@@ -1,6 +1,7 @@
 import { Button } from "../ui/button";
 import { TrashIcon, EyeOpenIcon } from "@radix-ui/react-icons";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import Link from "next/link";
 import { deleteSearchResults } from "~/server/queries/jobs-queries";
 
 interface SearchResultProps {
@@ -41,10 +42,12 @@ export default function SearchResult({
         </p>
       </div>
       <div className="flex items-center justify-center gap-2">
-        <Button className="flex w-full items-center justify-center gap-x-2 bg-green-500 text-white hover:bg-green-700">
-          View Jobs
-          <EyeOpenIcon className="h-5 w-5" />
-        </Button>
+        <Link href={`/saved-searches/${jobSearchId}`}>
+          <Button className="flex w-full items-center justify-center gap-x-2 bg-green-500 text-white hover:bg-green-700">
+            View Jobs
+            <EyeOpenIcon className="h-5 w-5" />
+          </Button>
+        </Link>
         <Button
           onClick={() => mutation.mutate()}
           className="flex w-full items-center justify-center gap-x-2 bg-red-500 text-white hover:bg-red-700"

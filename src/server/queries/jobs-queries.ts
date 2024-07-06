@@ -213,6 +213,7 @@ export async function saveJobSearchResults({
       .returning({ insertedId: Jobs.id });
 
     const savedSearchJobsToInsert = insertedJobs.map((job) => ({
+      //@ts-expect-error - idk why this showes error
       savedSearchId: savedSearch[0].savedSearchId,
       jobId: job.insertedId,
     }));

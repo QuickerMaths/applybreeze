@@ -52,12 +52,12 @@ export default async function SavedSearch({ params }: SavedSearchProps) {
         <div className="flex items-center justify-center gap-3">
           <p className="text-2xl font-bold text-primary dark:text-primary">
             <span className="text-gray-500">Role:</span>{" "}
-            {savedSearchFiltes?.jobFilter?.role ?? "N/A"}
+            {savedSearchFiltes?.role ?? "N/A"}
           </p>
           <p className="text-2xl font-semibold text-primary dark:text-primary">
             <span className="text-gray-500">Location:</span>{" "}
-            {savedSearchFiltes?.jobFilter?.city ?? "N/A"},{" "}
-            {savedSearchFiltes?.jobFilter?.country ?? "N/A"}
+            {savedSearchFiltes?.city ?? "N/A"},{" "}
+            {savedSearchFiltes?.country ?? "N/A"}
           </p>
         </div>
       </div>

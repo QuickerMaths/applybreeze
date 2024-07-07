@@ -33,7 +33,9 @@ export default function SearchResults({ userId }: SearchResultsProps) {
               page.map((searchResult) => (
                 <SearchResult
                   key={searchResult.id}
-                  jobFilter={searchResult.jobFilter}
+                  role={searchResult.role}
+                  city={searchResult.city}
+                  country={searchResult.country}
                   jobSearchId={searchResult.id}
                   userId={userId}
                 />

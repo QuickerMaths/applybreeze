@@ -34,18 +34,6 @@ export const Jobs = pgTable("Jobs", {
   url: varchar("url", { length: 1024 }),
 });
 
-export const JobFilters = pgTable("JobFilters", {
-  id: serial("id").primaryKey().notNull(),
-  userId: varchar("user_id", { length: 255 })
-    .notNull()
-    .references(() => Users.id),
-  role: varchar("role", { length: 255 }),
-  city: varchar("city", { length: 255 }),
-  country: varchar("country", { length: 255 }),
-  seniorityLevel: varchar("seniority_level", { length: 255 }),
-  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
-});
-
 export const Applications = pgTable("Applications", {
   id: serial("id").notNull().primaryKey(),
   userId: varchar("user_id", { length: 255 })
@@ -63,9 +51,10 @@ export const SavedSearches = pgTable("SavedSearches", {
   userId: varchar("user_id", { length: 255 })
     .notNull()
     .references(() => Users.id),
-  jobFilterId: integer("job_filter_id")
-    .notNull()
-    .references(() => JobFilters.id),
+  role: varchar("role", { length: 255 }),
+  city: varchar("city", { length: 255 }),
+  country: varchar("country", { length: 255 }),
+  seniorityLevel: varchar("seniority_level", { length: 255 }),
   savedAt: timestamp("saved_at", { withTimezone: true }).defaultNow(),
   expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
   isExtended: boolean("is_extended").default(false),
@@ -97,7 +86,6 @@ export const JobSearchRequest = pgTable("JobSearchRequest", {
 });
 
 export const userRelations = relations(Users, ({ many }) => ({
-  jobFilters: many(JobFilters),
   applications: many(Applications),
   savedSearches: many(SavedSearches),
 }));
@@ -105,11 +93,6 @@ export const userRelations = relations(Users, ({ many }) => ({
 export const jobRelations = relations(Jobs, ({ many }) => ({
   applications: many(Applications),
   savedSearchJobs: many(SavedSearchJobs),
-}));
-
-export const jobFilterRelations = relations(JobFilters, ({ one, many }) => ({
-  user: one(Users, { fields: [JobFilters.userId], references: [Users.id] }),
-  savedSearches: many(SavedSearches),
 }));
 
 export const applicationRelations = relations(Applications, ({ one }) => ({
@@ -123,10 +106,6 @@ export const savedSearchRelations = relations(
     user: one(Users, {
       fields: [SavedSearches.userId],
       references: [Users.id],
-    }),
-    jobFilter: one(JobFilters, {
-      fields: [SavedSearches.jobFilterId],
-      references: [JobFilters.id],
     }),
     savedSearchJobs: many(SavedSearchJobs),
   }),

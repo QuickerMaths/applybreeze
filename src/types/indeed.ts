@@ -6,9 +6,11 @@ export type IndeedJob = z.infer<typeof indeedJobSchema>;
 export interface SaveJobSearchParams {
   jobs: IndeedJob[];
   userId: string;
-  searchCriteria: {
-    role: string;
-    location: string;
-    country: string;
-  };
+  savedSearchId: number;
+}
+
+export interface SearchJobsParams {
+  role: string;
+  location: string;
+  country: string;
 }

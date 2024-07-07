@@ -2,28 +2,13 @@
 
 import { eq, inArray, sql } from "drizzle-orm";
 import { db } from "~/server/db";
-import {
-  JobFilters,
-  Jobs,
-  SavedSearches,
-  SavedSearchJobs,
-  Users,
-} from "../db/schema";
+import { Jobs, SavedSearches, SavedSearchJobs, Users } from "../db/schema";
 import type { WebhookEvent, UserJSON } from "@clerk/nextjs/server";
-import type { SaveJobSearchParams } from "~/types/indeed";
+import type { SaveJobSearchParams, SearchJobsParams } from "~/types/indeed";
 
 export async function getSavedSearchFilters(savedSearchId: number) {
   return await db.query.SavedSearches.findFirst({
     where: (savedSearch, { eq }) => eq(savedSearch.id, savedSearchId),
-    with: {
-      jobFilter: {
-        columns: {
-          role: true,
-          city: true,
-          country: true,
-        },
-      },
-    },
   });
 }
 
@@ -64,15 +49,6 @@ export async function getSearchResults(
   pageSize = 10,
 ) {
   return await db.query.SavedSearches.findMany({
-    with: {
-      jobFilter: {
-        columns: {
-          role: true,
-          city: true,
-          country: true,
-        },
-      },
-    },
     where: (savedSearch, { eq, and, lt }) =>
       and(
         eq(savedSearch.userId, userId),
@@ -93,10 +69,7 @@ export async function deleteSearchResults(searchResultsId: number) {
     .delete(SavedSearchJobs)
     .where(eq(SavedSearchJobs.savedSearchId, searchResultsId));
 
-  const deletedSearch = await db
-    .delete(SavedSearches)
-    .where(eq(SavedSearches.id, searchResultsId))
-    .returning({ jobFilterId: SavedSearches.jobFilterId });
+  await db.delete(SavedSearches).where(eq(SavedSearches.id, searchResultsId));
 
   if (jobIds.length > 0) {
     await db.delete(Jobs).where(
@@ -105,12 +78,6 @@ export async function deleteSearchResults(searchResultsId: number) {
         jobIds.map((job) => job.jobId),
       ),
     );
-  }
-
-  if (deletedSearch.length > 0 && deletedSearch[0]?.jobFilterId) {
-    await db
-      .delete(JobFilters)
-      .where(eq(JobFilters.id, deletedSearch[0].jobFilterId));
   }
 }
 
@@ -192,15 +159,13 @@ export async function deleteUser(id: string) {
     .where(eq(SavedSearches.userId, id))
     .returning({ id: SavedSearches.id });
 
-  await db.delete(JobFilters).where(eq(JobFilters.userId, id));
-
   await db.delete(Users).where(eq(Users.id, id));
 }
 
 export async function saveJobSearchResults({
   jobs,
   userId,
-  searchCriteria,
+  savedSearchId,
 }: SaveJobSearchParams) {
   return await db.transaction(async (tx) => {
     const userExists = await tx
@@ -211,34 +176,6 @@ export async function saveJobSearchResults({
 
     if (!userExists.length) {
       throw new Error("User not found");
-    }
-
-    const jobFilter = await tx
-      .insert(JobFilters)
-      .values({
-        userId: userId,
-        role: searchCriteria.role,
-        city: searchCriteria.location,
-        country: searchCriteria.country,
-        createdAt: sql`CURRENT_TIMESTAMP`,
-      })
-      .returning({ jobFilterId: JobFilters.id });
-
-    if (!jobFilter[0]?.jobFilterId) {
-      throw new Error("Failed to save job filter");
-    }
-
-    const savedSearch = await tx
-      .insert(SavedSearches)
-      .values({
-        userId: userId,
-        jobFilterId: jobFilter[0]?.jobFilterId,
-        expiresAt: sql`CURRENT_TIMESTAMP + INTERVAL '3 days'`,
-      })
-      .returning({ savedSearchId: SavedSearches.id });
-
-    if (!savedSearch[0]?.savedSearchId) {
-      throw new Error("Failed to save search");
     }
 
     const jobsToInsert = jobs.map((job) => ({
@@ -260,17 +197,58 @@ export async function saveJobSearchResults({
       .returning({ insertedId: Jobs.id });
 
     const savedSearchJobsToInsert = insertedJobs.map((job) => ({
-      //@ts-expect-error - idk why this showes error
-      savedSearchId: savedSearch[0].savedSearchId,
+      savedSearchId,
       jobId: job.insertedId,
     }));
 
     await tx.insert(SavedSearchJobs).values(savedSearchJobsToInsert);
 
     return {
-      jobFilterId: jobFilter[0].jobFilterId,
-      savedSearchId: savedSearch[0].savedSearchId,
+      savedSearchId,
       jobsCount: insertedJobs.length,
     };
+  });
+}
+
+export async function getSavedSearches(
+  userId: string,
+  jobsParams: SearchJobsParams,
+) {
+  return await db.transaction(async (tx) => {
+    const searchId = await tx.query.SavedSearches.findFirst({
+      where: (savedSearch, { eq, and }) =>
+        and(
+          eq(savedSearch.userId, userId),
+          eq(savedSearch.role, jobsParams.role),
+          eq(savedSearch.city, jobsParams.location),
+          eq(savedSearch.country, jobsParams.country),
+        ),
+      columns: {
+        id: true,
+      },
+    });
+
+    if (!searchId) {
+      const searchId = await tx
+        .insert(SavedSearches)
+        .values({
+          userId: userId,
+          role: jobsParams.role,
+          city: jobsParams.location,
+          country: jobsParams.country,
+          expiresAt: sql`CURRENT_TIMESTAMP + INTERVAL '3 DAYS'`,
+          isExtended: false,
+          savedAt: sql`CURRENT_TIMESTAMP`,
+        })
+        .returning({ id: SavedSearches.id });
+
+      if (!searchId) {
+        throw new Error("Could not save search");
+      }
+
+      return searchId[0].id;
+    }
+
+    return searchId.id;
   });
 }

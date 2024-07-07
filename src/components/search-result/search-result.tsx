@@ -5,21 +5,20 @@ import Link from "next/link";
 import { deleteSearchResults } from "~/server/queries/jobs-queries";
 
 interface SearchResultProps {
-  jobFilter: {
-    city: string | null;
-    country: string | null;
-    role: string | null;
-  } | null;
+  city: string | null;
+  country: string | null;
+  role: string | null;
   jobSearchId: number;
   userId: string;
 }
 
 export default function SearchResult({
-  jobFilter,
+  role,
+  city,
+  country,
   jobSearchId,
   userId,
 }: SearchResultProps) {
-  const { city, country, role } = jobFilter ?? {};
   const queryClient = useQueryClient();
 
   const mutation = useMutation({

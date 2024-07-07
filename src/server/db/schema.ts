@@ -6,6 +6,7 @@ import {
   integer,
   timestamp,
   boolean,
+  pgEnum,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 
@@ -80,6 +81,21 @@ export const SavedSearchJobs = pgTable("SavedSearchJobs", {
     .references(() => Jobs.id),
 });
 
+export const statusEnum = pgEnum("status", ["pending", "completed", "failed"]);
+
+export const JobSearchRequest = pgTable("JobSearchRequest", {
+  id: serial("id").notNull().primaryKey(),
+  userId: varchar("user_id", { length: 255 })
+    .notNull()
+    .references(() => Users.id),
+  savedSearchId: integer("saved_search_id")
+    .notNull()
+    .references(() => SavedSearches.id),
+  status: statusEnum("status").notNull().default("pending"),
+  expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+});
+
 export const userRelations = relations(Users, ({ many }) => ({
   jobFilters: many(JobFilters),
   applications: many(Applications),
@@ -124,5 +140,19 @@ export const savedSearchJobRelations = relations(
       references: [SavedSearches.id],
     }),
     job: one(Jobs, { fields: [SavedSearchJobs.jobId], references: [Jobs.id] }),
+  }),
+);
+
+export const jobSearchRequestRelations = relations(
+  JobSearchRequest,
+  ({ one }) => ({
+    user: one(Users, {
+      fields: [JobSearchRequest.userId],
+      references: [Users.id],
+    }),
+    savedSearch: one(SavedSearches, {
+      fields: [JobSearchRequest.savedSearchId],
+      references: [SavedSearches.id],
+    }),
   }),
 );

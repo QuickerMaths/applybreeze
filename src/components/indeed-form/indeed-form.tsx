@@ -15,18 +15,22 @@ import {
 import { Input } from "../ui/input";
 import { indeedSearchSchema } from "~/schemas/indeed";
 import { getJobs } from "~/server/mutations/jobs-mutation";
-import { v4 as uuidv4 } from "uuid";
-import useMultiRequest from "~/hooks/useMultipleRequests";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 interface IndeedFormProps {
   userId: string;
 }
 
+interface Request {
+  id: number;
+  status: "pending" | "completed" | "error";
+}
+
 export default function IndeedForm({ userId }: IndeedFormProps) {
+  const queryClient = useQueryClient();
   const form = useForm<z.infer<typeof indeedSearchSchema>>({
     resolver: zodResolver(indeedSearchSchema),
     defaultValues: {
-      id: "",
       role: "Frontend developer",
       location: "Warsaw",
       country: "PL",
@@ -34,15 +38,32 @@ export default function IndeedForm({ userId }: IndeedFormProps) {
     },
   });
 
-  const { requests, addRequest } = useMultiRequest({
-    mutationFunction: getJobs,
-    endpoint: "indeed",
-    userId,
+  const mutation = useMutation({
+    mutationFn: (values: z.infer<typeof indeedSearchSchema>) =>
+      getJobs(values, "indeed"),
+    onMutate: async () => {
+      await queryClient.cancelQueries({ queryKey: ["requests", userId] });
+
+      queryClient.setQueryData(["requests", userId], (old: Request[]) => {
+        const newRequest = {
+          id: Date.now(), // temporary id
+          status: "pending",
+        };
+        return [...(old || []), newRequest];
+      });
+    },
+    onSettled: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: ["requests", userId],
+      });
+      await queryClient.invalidateQueries({
+        queryKey: ["searchResults", userId],
+      });
+    },
   });
 
-  function onSubmit(values: z.infer<typeof indeedSearchSchema>) {
-    values.id = uuidv4();
-    addRequest(values);
+  async function onSubmit(values: z.infer<typeof indeedSearchSchema>) {
+    mutation.mutate(values);
   }
 
   return (
@@ -112,17 +133,6 @@ export default function IndeedForm({ userId }: IndeedFormProps) {
           </Button>
         </form>
       </Form>
-      {requests.map((request) => (
-        <div key={request.id}>
-          {request.status === "processing" ? (
-            <p>Loading...</p>
-          ) : request.status === "error" ? (
-            <p>Error</p>
-          ) : request.status === "completed" ? (
-            <p>Success</p>
-          ) : null}
-        </div>
-      ))}
     </>
   );
 }

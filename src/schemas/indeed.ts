@@ -25,7 +25,6 @@ const indeedJobSchema = z.object({
 });
 
 const indeedSearchSchema = z.object({
-  id: z.string(),
   role: z.string().optional().default(""),
   location: z.string().optional().default(""),
   limit: z.preprocess(

@@ -2,7 +2,13 @@
 
 import { eq, inArray, sql } from "drizzle-orm";
 import { db } from "~/server/db";
-import { Jobs, SavedSearches, SavedSearchJobs, Users } from "../db/schema";
+import {
+  Jobs,
+  JobSearchRequest,
+  SavedSearches,
+  SavedSearchJobs,
+  Users,
+} from "../db/schema";
 import type { WebhookEvent, UserJSON } from "@clerk/nextjs/server";
 import type { SaveJobSearchParams, SearchJobsParams } from "~/types/indeed";
 
@@ -242,7 +248,7 @@ export async function getSavedSearches(
         })
         .returning({ id: SavedSearches.id });
 
-      if (!searchId) {
+      if (!searchId[0]?.id) {
         throw new Error("Could not save search");
       }
 
@@ -250,5 +256,55 @@ export async function getSavedSearches(
     }
 
     return searchId.id;
+  });
+}
+
+export async function createSearchRequest(
+  savedSearchId: number,
+  userId: string,
+) {
+  const request = await db
+    .insert(JobSearchRequest)
+    .values({
+      userId,
+      savedSearchId,
+      status: "pending",
+      expiresAt: sql`CURRENT_TIMESTAMP + INTERVAL '3 DAYS'`,
+      createdAt: sql`CURRENT_TIMESTAMP`,
+    })
+    .returning({ id: JobSearchRequest.id });
+
+  if (!request[0]?.id) {
+    throw new Error("Could not create search request");
+  }
+
+  return request[0].id;
+}
+
+export async function updateSearchRequestStatus(
+  requestId: number,
+  status: "completed" | "failed",
+) {
+  return await db
+    .update(JobSearchRequest)
+    .set({
+      status,
+    })
+    .where(eq(JobSearchRequest.id, requestId));
+}
+
+export async function getRequests(userId: string) {
+  return await db.query.JobSearchRequest.findMany({
+    where: (request, { eq }) => eq(request.userId, userId),
+  });
+}
+
+export async function deleteRequest(requestId: number) {
+  await db.delete(JobSearchRequest).where(eq(JobSearchRequest.id, requestId));
+}
+
+export async function getSavedSearchesByRequest(requestId: number) {
+  return await db.query.SavedSearches.findMany({
+    where: (search, { eq }) => eq(search.id, requestId),
   });
 }

@@ -3,7 +3,12 @@ import { validateJobs } from "~/lib/validateJobs";
 import { validateQueryParams } from "~/lib/validateQueryParams";
 import { indeedSearchSchema, indeedJobSchema } from "~/schemas/indeed";
 import { getAuth } from "@clerk/nextjs/server";
-import { saveJobSearchResults } from "~/server/queries/jobs-queries";
+import {
+  createSearchRequest,
+  getSavedSearches,
+  saveJobSearchResults,
+  updateSearchRequestStatus,
+} from "~/server/queries/jobs-queries";
 import type { NextRequest } from "next/server";
 
 const client = new ApifyClient({
@@ -30,6 +35,10 @@ export async function POST(request: NextRequest): Promise<Response> {
     maxConcurrency: 5,
   };
 
+  const savedSearchId = await getSavedSearches(userId, validatedQuery);
+
+  const requestId = await createSearchRequest(savedSearchId, userId);
+
   const run = await client.actor("misceres/indeed-scraper").call(input);
 
   try {
@@ -41,14 +50,18 @@ export async function POST(request: NextRequest): Promise<Response> {
       await saveJobSearchResults({
         jobs: validatedJobs,
         userId,
-        searchCriteria: validatedQuery,
+        savedSearchId,
       });
 
+      await updateSearchRequestStatus(requestId, "completed");
       return new Response("OK", { status: 200 });
     }
 
+    await updateSearchRequestStatus(requestId, "failed");
     return new Response("No jobs found", { status: 404 });
   } catch (error: unknown) {
+    await updateSearchRequestStatus(requestId, "failed");
+
     if (error instanceof Error) {
       return new Response(error.message, { status: 500 });
     }

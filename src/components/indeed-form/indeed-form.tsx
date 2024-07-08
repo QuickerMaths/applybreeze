@@ -16,14 +16,11 @@ import { Input } from "../ui/input";
 import { indeedSearchSchema } from "~/schemas/indeed";
 import { getJobs } from "~/server/mutations/jobs-mutation";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import type { InferSelectModel } from "drizzle-orm";
+import type { JobSearchRequest } from "~/server/db/schema";
 
 interface IndeedFormProps {
   userId: string;
-}
-
-interface Request {
-  id: number;
-  status: "pending" | "completed" | "error";
 }
 
 export default function IndeedForm({ userId }: IndeedFormProps) {
@@ -44,18 +41,21 @@ export default function IndeedForm({ userId }: IndeedFormProps) {
     onMutate: async () => {
       await queryClient.cancelQueries({ queryKey: ["requests", userId] });
 
-      queryClient.setQueryData(["requests", userId], (old: Request[]) => {
-        const newRequest = {
-          id: Date.now(), // temporary id
-          status: "pending",
-          savedSearch: {
-            role: form.getValues("role"),
-            city: form.getValues("location"),
-            country: form.getValues("country"),
-          },
-        };
-        return [...(old || []), newRequest];
-      });
+      queryClient.setQueryData(
+        ["requests", userId],
+        (old: InferSelectModel<typeof JobSearchRequest>[]) => {
+          const newRequest = {
+            id: Date.now(), // temporary id
+            status: "pending",
+            savedSearch: {
+              role: form.getValues("role"),
+              city: form.getValues("location"),
+              country: form.getValues("country"),
+            },
+          };
+          return [...(old || []), newRequest];
+        },
+      );
     },
     onSettled: async () => {
       await queryClient.invalidateQueries({

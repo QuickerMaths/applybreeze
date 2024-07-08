@@ -269,7 +269,7 @@ export async function createSearchRequest(
       userId,
       savedSearchId,
       status: "pending",
-      expiresAt: sql`CURRENT_TIMESTAMP + INTERVAL '3 DAYS'`,
+      expiresAt: sql`CURRENT_TIMESTAMP + INTERVAL '30 MINUTES'`,
       createdAt: sql`CURRENT_TIMESTAMP`,
     })
     .returning({ id: JobSearchRequest.id });
@@ -326,4 +326,8 @@ export async function getPendingRequests(userId: string) {
 
 export async function completeRequest(requestId: number) {
   await db.delete(JobSearchRequest).where(eq(JobSearchRequest.id, requestId));
+}
+
+export async function deleteExpiredRequests() {
+  await db.delete(JobSearchRequest).where(sql`expires_at < CURRENT_TIMESTAMP`);
 }

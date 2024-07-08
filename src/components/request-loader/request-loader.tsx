@@ -1,6 +1,6 @@
 import React from "react";
 import { Button } from "../ui/button";
-import { EyeOpenIcon, CheckIcon, Cross1Icon } from "@radix-ui/react-icons";
+import { EyeOpenIcon, CheckIcon } from "@radix-ui/react-icons";
 import Link from "next/link";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { JobSearchRequest } from "~/server/db/schema";
@@ -15,8 +15,6 @@ interface RequestLoaderProps {
       role: string | null;
       country: string | null;
       city: string | null;
-    } & {
-      abortToken?: AbortController;
     };
   };
 }
@@ -72,15 +70,7 @@ export default function RequestLoader({ userId, request }: RequestLoaderProps) {
             <EyeOpenIcon className="h-5 w-5" />
           </Button>
         </Link>
-        {request.status === "pending" ? (
-          <Button
-            onClick={() => completeMutation.mutate()}
-            className="flex w-full items-center justify-center gap-x-2 bg-red-500 text-white hover:bg-red-700"
-          >
-            {completeMutation.isPending ? "Aborting..." : "Abort"}
-            <Cross1Icon className="h-5 w-5" />
-          </Button>
-        ) : (
+        {request.status !== "pending" && (
           <Button
             onClick={() => completeMutation.mutate()}
             className="flex w-full items-center justify-center gap-x-2 bg-green-600 text-white hover:bg-green-700"

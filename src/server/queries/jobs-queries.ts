@@ -329,5 +329,9 @@ export async function completeRequest(requestId: number) {
 }
 
 export async function deleteExpiredRequests() {
-  await db.delete(JobSearchRequest).where(sql`expires_at < CURRENT_TIMESTAMP`);
+  await db
+    .delete(JobSearchRequest)
+    .where(
+      sql`expires_at < CURRENT_TIMESTAMP AND status = 'pending' OR status = 'failed'`,
+    );
 }

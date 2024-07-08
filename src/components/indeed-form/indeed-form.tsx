@@ -18,6 +18,7 @@ import { getJobs } from "~/server/mutations/jobs-mutation";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { InferSelectModel } from "drizzle-orm";
 import type { JobSearchRequest } from "~/server/db/schema";
+import { getSavedSearches } from "~/server/queries/jobs-queries";
 
 interface IndeedFormProps {
   userId: string;
@@ -41,12 +42,15 @@ export default function IndeedForm({ userId }: IndeedFormProps) {
     onMutate: async () => {
       await queryClient.cancelQueries({ queryKey: ["requests", userId] });
 
+      const savedSearchId = await getSavedSearches(userId, form.getValues());
+
       queryClient.setQueryData(
         ["requests", userId],
         (old: InferSelectModel<typeof JobSearchRequest>[]) => {
           const newRequest = {
             id: Date.now(), // temporary id
             status: "pending",
+            savedSearchId,
             savedSearch: {
               role: form.getValues("role"),
               city: form.getValues("location"),

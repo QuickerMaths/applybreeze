@@ -2,6 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { getRequests } from "~/server/queries/jobs-queries";
+import RequestLoader from "../request-loader/request-loader";
 
 interface RequestsQueueProps {
   userId: string;
@@ -14,15 +15,9 @@ export default function RequestsQueue({ userId }: RequestsQueueProps) {
   });
 
   return (
-    <ul className="flex flex-col items-center justify-center gap-y-2">
+    <ul className="flex w-3/4 flex-col items-center justify-center gap-y-2">
       {data?.map((request) => (
-        <li key={request.id}>
-          {request.status === "pending" ? (
-            <p>Request {request.id} is pending</p>
-          ) : (
-            <p>Request {request.id} is complete</p>
-          )}
-        </li>
+        <RequestLoader key={request.id} userId={userId} request={request} />
       ))}
     </ul>
   );

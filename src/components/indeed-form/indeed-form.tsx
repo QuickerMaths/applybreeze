@@ -48,6 +48,11 @@ export default function IndeedForm({ userId }: IndeedFormProps) {
         const newRequest = {
           id: Date.now(), // temporary id
           status: "pending",
+          savedSearch: {
+            role: form.getValues("role"),
+            city: form.getValues("location"),
+            country: form.getValues("country"),
+          },
         };
         return [...(old || []), newRequest];
       });

@@ -296,15 +296,18 @@ export async function updateSearchRequestStatus(
 export async function getRequests(userId: string) {
   return await db.query.JobSearchRequest.findMany({
     where: (request, { eq }) => eq(request.userId, userId),
+    with: {
+      savedSearch: {
+        columns: {
+          role: true,
+          city: true,
+          country: true,
+        },
+      },
+    },
   });
 }
 
-export async function deleteRequest(requestId: number) {
+export async function completeRequest(requestId: number) {
   await db.delete(JobSearchRequest).where(eq(JobSearchRequest.id, requestId));
-}
-
-export async function getSavedSearchesByRequest(requestId: number) {
-  return await db.query.SavedSearches.findMany({
-    where: (search, { eq }) => eq(search.id, requestId),
-  });
 }

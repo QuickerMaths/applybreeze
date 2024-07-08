@@ -17,9 +17,14 @@ interface RequestLoaderProps {
       city: string | null;
     };
   };
+  isInSavedSearchJobs?: boolean;
 }
 
-export default function RequestLoader({ userId, request }: RequestLoaderProps) {
+export default function RequestLoader({
+  userId,
+  request,
+  isInSavedSearchJobs,
+}: RequestLoaderProps) {
   const queryClient = useQueryClient();
 
   const completeMutation = useMutation({
@@ -63,23 +68,25 @@ export default function RequestLoader({ userId, request }: RequestLoaderProps) {
           {request.savedSearch.country ?? "N/A"}
         </p>
       </div>
-      <div className="flex items-center justify-center gap-2">
-        <Link href={`/saved-searches/${request.savedSearchId}`}>
-          <Button className="flex w-full items-center justify-center gap-x-2 bg-blue-500 text-white hover:bg-blue-700">
-            View Search
-            <EyeOpenIcon className="h-5 w-5" />
-          </Button>
-        </Link>
-        {request.status !== "pending" && (
-          <Button
-            onClick={() => completeMutation.mutate()}
-            className="flex w-full items-center justify-center gap-x-2 bg-green-600 text-white hover:bg-green-700"
-          >
-            {completeMutation.isPending ? "Completing..." : "Complete"}
-            <CheckIcon className="h-5 w-5" />
-          </Button>
-        )}
-      </div>
+      {!isInSavedSearchJobs && (
+        <div className="flex items-center justify-center gap-2">
+          <Link href={`/saved-searches/${request.savedSearchId}`}>
+            <Button className="flex w-full items-center justify-center gap-x-2 bg-blue-500 text-white hover:bg-blue-700">
+              View Search
+              <EyeOpenIcon className="h-5 w-5" />
+            </Button>
+          </Link>
+          {request.status !== "pending" && (
+            <Button
+              onClick={() => completeMutation.mutate()}
+              className="flex w-full items-center justify-center gap-x-2 bg-green-600 text-white hover:bg-green-700"
+            >
+              {completeMutation.isPending ? "Completing..." : "Complete"}
+              <CheckIcon className="h-5 w-5" />
+            </Button>
+          )}
+        </div>
+      )}
     </li>
   );
 }

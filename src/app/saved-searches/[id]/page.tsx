@@ -6,6 +6,7 @@ import {
 import React from "react";
 import { getCurrentUserId } from "~/lib/getCurrentUser";
 import {
+  getPendingRequests,
   getSavedSearchFilters,
   getSavedSearchJobs,
 } from "~/server/queries/jobs-queries";
@@ -44,6 +45,11 @@ export default async function SavedSearch({ params }: SavedSearchProps) {
   });
 
   const savedSearchFiltes = await getSavedSearchFilters(params.id);
+
+  await queryClient.prefetchQuery({
+    queryKey: ["requests", userId],
+    queryFn: async () => await getPendingRequests(userId),
+  });
 
   return (
     <main className="my-10 flex min-h-screen flex-col items-center bg-background dark:bg-background">

@@ -1,7 +1,10 @@
 "use client";
 
-import { useInfiniteQuery } from "@tanstack/react-query";
-import { getSavedSearchJobs } from "~/server/queries/jobs-queries";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
+import {
+  getPendingRequests,
+  getSavedSearchJobs,
+} from "~/server/queries/jobs-queries";
 import {
   Table,
   TableBody,
@@ -12,6 +15,7 @@ import {
   TableRow,
 } from "~/components/ui/table";
 import { Button } from "../ui/button";
+import RequestLoader from "../request-loader/request-loader";
 
 interface SavedSearchJobsProps {
   userId: string;
@@ -22,22 +26,49 @@ export default function SavedSearchJobs({
   userId,
   savedSearchId,
 }: SavedSearchJobsProps) {
-  const { data, hasNextPage, isFetchingNextPage, isFetching, fetchNextPage } =
-    useInfiniteQuery({
-      queryKey: ["savedSearchJobs", userId],
-      queryFn: ({ pageParam }: { pageParam: number }) =>
-        getSavedSearchJobs(savedSearchId, pageParam),
-      initialPageParam: 0,
-      getNextPageParam: (lastPage, _pages) => {
-        if (lastPage.length < 10) return undefined;
-        const lastId = lastPage[lastPage.length - 1]?.id;
-        return lastId;
-      },
-    });
+  const {
+    data: savedSearchJobsData,
+    hasNextPage,
+    isFetchingNextPage,
+    isFetching,
+    fetchNextPage,
+  } = useInfiniteQuery({
+    queryKey: ["savedSearchJobs", userId],
+    queryFn: ({ pageParam }: { pageParam: number }) =>
+      getSavedSearchJobs(savedSearchId, pageParam),
+    initialPageParam: 0,
+    getNextPageParam: (lastPage, _pages) => {
+      if (lastPage.length < 10) return undefined;
+      const lastId = lastPage[lastPage.length - 1]?.id;
+      return lastId;
+    },
+  });
+
+  const { data: pendingRequestsData } = useQuery({
+    queryKey: ["requests", userId],
+    queryFn: async () => await getPendingRequests(userId),
+  });
 
   return (
     <div className="mx-auto flex w-3/4 flex-col items-center justify-center">
-      {data?.pages ? (
+      {pendingRequestsData && pendingRequestsData.length > 0 && (
+        <>
+          <h2 className="mb-2 text-2xl font-bold text-primary dark:text-primary">
+            Pending requests
+          </h2>
+          <ul className="mb-2 flex w-full flex-col gap-y-2">
+            {pendingRequestsData.map((request) => (
+              <RequestLoader
+                key={request.id}
+                userId={userId}
+                request={request}
+                isInSavedSearchJobs
+              />
+            ))}
+          </ul>
+        </>
+      )}
+      {savedSearchJobsData?.pages ? (
         <>
           <Table>
             <TableHeader>
@@ -51,7 +82,7 @@ export default function SavedSearchJobs({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {data.pages.map((page) =>
+              {savedSearchJobsData.pages.map((page) =>
                 page.map((job) => (
                   <TableRow key={job.id}>
                     <TableCell className="w-[10%]">{job.job.title}</TableCell>

@@ -40,6 +40,9 @@ export default function IndeedForm({ userId }: IndeedFormProps) {
     mutationFn: (values: z.infer<typeof indeedSearchSchema>) =>
       getJobs(values, "indeed"),
     onMutate: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: ["requests", userId],
+      });
       await queryClient.cancelQueries({ queryKey: ["requests", userId] });
 
       const savedSearchId = await getSavedSearches(userId, form.getValues());

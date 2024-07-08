@@ -308,6 +308,22 @@ export async function getRequests(userId: string) {
   });
 }
 
+export async function getPendingRequests(userId: string) {
+  return await db.query.JobSearchRequest.findMany({
+    where: (request, { eq, and }) =>
+      and(eq(request.userId, userId), eq(request.status, "pending")),
+    with: {
+      savedSearch: {
+        columns: {
+          role: true,
+          city: true,
+          country: true,
+        },
+      },
+    },
+  });
+}
+
 export async function completeRequest(requestId: number) {
   await db.delete(JobSearchRequest).where(eq(JobSearchRequest.id, requestId));
 }

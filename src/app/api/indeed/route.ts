@@ -24,6 +24,8 @@ export async function POST(request: NextRequest): Promise<Response> {
 
   const validatedQuery = validateQueryParams(request.url, indeedSearchSchema);
 
+  const maxConcurrency = 2;
+
   const input = {
     position: validatedQuery.role,
     country: validatedQuery.country,
@@ -32,16 +34,15 @@ export async function POST(request: NextRequest): Promise<Response> {
     parseCompanyDetails: false,
     saveOnlyUniqueItems: true,
     followApplyRedirects: true,
-    maxConcurrency: 5,
+    maxConcurrency,
   };
 
   const savedSearchId = await getSavedSearches(userId, validatedQuery);
 
   const requestId = await createSearchRequest(savedSearchId, userId);
 
-  const run = await client.actor("misceres/indeed-scraper").call(input);
-
   try {
+    const run = await client.actor("misceres/indeed-scraper").call(input);
     const { items } = await client.dataset(run.defaultDatasetId).listItems();
 
     const validatedJobs = validateJobs(items, indeedJobSchema);

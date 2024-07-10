@@ -19,7 +19,7 @@ export default function RequestsQueue({ userId }: RequestsQueueProps) {
       {data && data.length > 0 ? (
         <>
           <p>Requests are deleted automatically after 30 minutes</p>
-          <p className="mb-2 text-gray-600">
+          <p className="mb-2 text-gray-500">
             You can only start 2 concurent requests at a time.
           </p>
           <ul className="flex w-full flex-col gap-y-2">

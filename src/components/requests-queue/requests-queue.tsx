@@ -18,8 +18,9 @@ export default function RequestsQueue({ userId }: RequestsQueueProps) {
     <div className="flex w-3/4 flex-col items-center justify-center gap-y-2">
       {data && data.length > 0 ? (
         <>
-          <p className="mb-2">
-            Requests are deleted automatically after 30 minutes
+          <p>Requests are deleted automatically after 30 minutes</p>
+          <p className="mb-2 text-gray-600">
+            You can only start 2 concurent requests at a time.
           </p>
           <ul className="flex w-full flex-col gap-y-2">
             {data.map((request) => (

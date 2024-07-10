@@ -1,10 +1,8 @@
 "use client";
 
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
-import {
-  getPendingRequests,
-  getSavedSearchJobs,
-} from "~/server/queries/jobs-queries";
+import { getPendingRequests } from "~/server/queries/request-queries";
+import { getSavedSearchJobs } from "~/server/queries/jobs-queries";
 import {
   Table,
   TableBody,

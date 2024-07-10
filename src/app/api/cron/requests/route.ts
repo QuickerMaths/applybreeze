@@ -1,4 +1,4 @@
-import { deleteExpiredRequests } from "~/server/queries/jobs-queries";
+import { deleteExpiredRequests } from "~/server/queries/request-queries";
 
 export async function POST() {
   try {

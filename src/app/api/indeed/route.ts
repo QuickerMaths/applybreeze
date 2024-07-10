@@ -4,11 +4,13 @@ import { validateQueryParams } from "~/lib/validateQueryParams";
 import { indeedSearchSchema, indeedJobSchema } from "~/schemas/indeed";
 import { getAuth } from "@clerk/nextjs/server";
 import {
-  createSearchRequest,
   getSavedSearches,
   saveJobSearchResults,
-  updateSearchRequestStatus,
 } from "~/server/queries/jobs-queries";
+import {
+  createSearchRequest,
+  updateSearchRequestStatus,
+} from "~/server/queries/request-queries";
 import type { NextRequest } from "next/server";
 
 const client = new ApifyClient({

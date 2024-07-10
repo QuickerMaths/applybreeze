@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { getRequests } from "~/server/queries/jobs-queries";
+import { getRequests } from "~/server/queries/request-queries";
 import RequestLoader from "../request-loader/request-loader";
 
 interface RequestsQueueProps {

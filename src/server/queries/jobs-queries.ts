@@ -2,14 +2,7 @@
 
 import { eq, inArray, sql } from "drizzle-orm";
 import { db } from "~/server/db";
-import {
-  Jobs,
-  JobSearchRequest,
-  SavedSearches,
-  SavedSearchJobs,
-  Users,
-} from "../db/schema";
-import type { WebhookEvent, UserJSON } from "@clerk/nextjs/server";
+import { Jobs, SavedSearches, SavedSearchJobs, Users } from "../db/schema";
 import type { SaveJobSearchParams, SearchJobsParams } from "~/types/indeed";
 
 export async function getSavedSearchFilters(savedSearchId: number) {
@@ -86,88 +79,6 @@ export async function deleteSearchResults(searchResultsId: number) {
     );
   }
 }
-
-export async function saveUser(payload: WebhookEvent) {
-  const user = payload.data as UserJSON;
-
-  const email = user.email_addresses.find(
-    (email) => email.id === user.primary_email_address_id,
-  );
-
-  if (!email) {
-    return;
-  }
-
-  await db.insert(Users).values({
-    id: user.id,
-    email: email.email_address,
-    firstName: user.first_name,
-    lastName: user.last_name,
-    username: user.username ?? null,
-    createdAt: new Date(user.created_at),
-    updatedAt: new Date(user.updated_at),
-  });
-}
-
-export async function updateUser(payload: WebhookEvent, id: string) {
-  const user = payload.data as UserJSON;
-
-  const email = user.email_addresses.find(
-    (email) => email.id === user.primary_email_address_id,
-  );
-
-  if (!email) {
-    return;
-  }
-
-  await db
-    .update(Users)
-    .set({
-      id: user.id,
-      email: email.email_address,
-      firstName: user.first_name,
-      lastName: user.last_name,
-      username: user.username ?? null,
-      createdAt: new Date(user.created_at),
-      updatedAt: new Date(user.updated_at),
-    })
-    .where(eq(Users.id, id));
-}
-
-export async function deleteUser(id: string) {
-  const savedSearchId = await db
-    .select({ id: SavedSearches.id })
-    .from(SavedSearches)
-    .where(eq(SavedSearches.userId, id));
-
-  if (!savedSearchId[0]?.id) return;
-
-  const jobIds = await db
-    .select({ jobId: SavedSearchJobs.jobId })
-    .from(SavedSearchJobs)
-    .where(eq(SavedSearchJobs.savedSearchId, savedSearchId[0].id));
-
-  await db
-    .delete(SavedSearchJobs)
-    .where(eq(SavedSearchJobs.savedSearchId, savedSearchId[0].id));
-
-  if (jobIds.length > 0) {
-    await db.delete(Jobs).where(
-      inArray(
-        Jobs.id,
-        jobIds.map((job) => job.jobId),
-      ),
-    );
-  }
-
-  await db
-    .delete(SavedSearches)
-    .where(eq(SavedSearches.userId, id))
-    .returning({ id: SavedSearches.id });
-
-  await db.delete(Users).where(eq(Users.id, id));
-}
-
 export async function saveJobSearchResults({
   jobs,
   userId,
@@ -257,81 +168,4 @@ export async function getSavedSearches(
 
     return searchId.id;
   });
-}
-
-export async function createSearchRequest(
-  savedSearchId: number,
-  userId: string,
-) {
-  const request = await db
-    .insert(JobSearchRequest)
-    .values({
-      userId,
-      savedSearchId,
-      status: "pending",
-      expiresAt: sql`CURRENT_TIMESTAMP + INTERVAL '30 MINUTES'`,
-      createdAt: sql`CURRENT_TIMESTAMP`,
-    })
-    .returning({ id: JobSearchRequest.id });
-
-  if (!request[0]?.id) {
-    throw new Error("Could not create search request");
-  }
-
-  return request[0].id;
-}
-
-export async function updateSearchRequestStatus(
-  requestId: number,
-  status: "completed" | "failed",
-) {
-  return await db
-    .update(JobSearchRequest)
-    .set({
-      status,
-    })
-    .where(eq(JobSearchRequest.id, requestId));
-}
-
-export async function getRequests(userId: string) {
-  return await db.query.JobSearchRequest.findMany({
-    where: (request, { eq }) => eq(request.userId, userId),
-    with: {
-      savedSearch: {
-        columns: {
-          role: true,
-          city: true,
-          country: true,
-        },
-      },
-    },
-  });
-}
-
-export async function getPendingRequests(userId: string) {
-  return await db.query.JobSearchRequest.findMany({
-    where: (request, { eq, and }) =>
-      and(eq(request.userId, userId), eq(request.status, "pending")),
-    with: {
-      savedSearch: {
-        columns: {
-          role: true,
-          city: true,
-          country: true,
-        },
-      },
-    },
-  });
-}
-
-export async function completeRequest(requestId: number) {
-  await db.delete(JobSearchRequest).where(eq(JobSearchRequest.id, requestId));
-}
-
-export async function deleteExpiredRequests() {
-  await db
-    .delete(JobSearchRequest)
-    .where(
-      sql`expires_at < CURRENT_TIMESTAMP AND status = 'pending' OR status = 'failed'`,
-    );
 }

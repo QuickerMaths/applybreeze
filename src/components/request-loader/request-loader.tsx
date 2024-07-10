@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { JobSearchRequest } from "~/server/db/schema";
 import type { InferSelectModel } from "drizzle-orm";
-import { completeRequest } from "~/server/queries/jobs-queries";
+import { completeRequest } from "~/server/queries/request-queries";
 import { cn } from "~/lib/utils";
 
 interface RequestLoaderProps {

@@ -44,6 +44,7 @@ export const Applications = pgTable("Applications", {
     .references(() => Jobs.id),
   status: varchar("status", { length: 50 }),
   appliedDate: timestamp("applied_date", { withTimezone: true }).defaultNow(),
+  notes: text("notes"),
 });
 
 export const SavedSearches = pgTable("SavedSearches", {

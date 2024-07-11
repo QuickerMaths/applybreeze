@@ -34,6 +34,15 @@ export const Jobs = pgTable("Jobs", {
   url: varchar("url", { length: 1024 }),
 });
 
+export const applicationStatusEnum = pgEnum("status", [
+  "applied",
+  "interviewing",
+  "rejected",
+  "offered",
+  "accepted",
+  "declined",
+]);
+
 export const Applications = pgTable("Applications", {
   id: serial("id").notNull().primaryKey(),
   userId: varchar("user_id", { length: 255 })
@@ -42,7 +51,7 @@ export const Applications = pgTable("Applications", {
   jobId: integer("job_id")
     .notNull()
     .references(() => Jobs.id),
-  status: varchar("status", { length: 50 }),
+  status: applicationStatusEnum("status").notNull().default("applied"),
   appliedDate: timestamp("applied_date", { withTimezone: true }).defaultNow(),
   notes: text("notes"),
 });
@@ -71,7 +80,11 @@ export const SavedSearchJobs = pgTable("SavedSearchJobs", {
     .references(() => Jobs.id),
 });
 
-export const statusEnum = pgEnum("status", ["pending", "completed", "failed"]);
+export const jobSearchStatusEnum = pgEnum("status", [
+  "pending",
+  "completed",
+  "failed",
+]);
 
 export const JobSearchRequest = pgTable("JobSearchRequest", {
   id: serial("id").notNull().primaryKey(),
@@ -81,7 +94,7 @@ export const JobSearchRequest = pgTable("JobSearchRequest", {
   savedSearchId: integer("saved_search_id")
     .notNull()
     .references(() => SavedSearches.id),
-  status: statusEnum("status").notNull().default("pending"),
+  status: jobSearchStatusEnum("status").notNull().default("pending"),
   expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
 });

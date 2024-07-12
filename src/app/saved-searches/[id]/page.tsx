@@ -6,11 +6,11 @@ import {
 import React from "react";
 import { getCurrentUserId } from "~/lib/getCurrentUser";
 import {
-  getPendingRequests,
   getSavedSearchFilters,
   getSavedSearchJobs,
 } from "~/server/queries/jobs-queries";
 import SavedSearchJobs from "~/components/saved-search-jobs/saved-search-jobs";
+import { getPendingRequests } from "~/server/queries/request-queries";
 
 interface SavedSearchProps {
   params: {

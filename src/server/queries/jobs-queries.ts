@@ -20,6 +20,7 @@ export async function getSavedSearchJobs(
     with: {
       job: {
         columns: {
+          id: true,
           title: true,
           city: true,
           country: true,

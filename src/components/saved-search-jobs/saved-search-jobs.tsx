@@ -3,6 +3,7 @@
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { getPendingRequests } from "~/server/queries/request-queries";
 import { getSavedSearchJobs } from "~/server/queries/jobs-queries";
+import { ScrollArea } from "~/components/ui/scroll-area";
 import {
   Table,
   TableBody,
@@ -49,7 +50,7 @@ export default function SavedSearchJobs({
   });
 
   return (
-    <div className="mx-auto flex w-3/4 flex-col items-center justify-center">
+    <div className="mx-auto flex flex-col items-center justify-center">
       {pendingRequestsData && pendingRequestsData.length > 0 && (
         <>
           <h2 className="mb-2 text-2xl font-bold text-primary dark:text-primary">
@@ -70,45 +71,47 @@ export default function SavedSearchJobs({
       {savedSearchJobsData?.pages ? (
         <>
           <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="dark:text-white">Role</TableHead>
-                <TableHead className="dark:text-white">City</TableHead>
-                <TableHead className="dark:text-white">Country</TableHead>
-                <TableHead className="dark:text-white">Salary</TableHead>
-                <TableHead className="dark:text-white">Seniority</TableHead>
-                <TableHead className="dark:text-white">Url</TableHead>
-                <TableHead className="dark:text-white"></TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {savedSearchJobsData.pages.map((page) =>
-                page.map((job) => (
-                  <TableRow key={job.id}>
-                    <TableCell className="w-[10%]">{job.job.title}</TableCell>
-                    <TableCell>{job.job.city}</TableCell>
-                    <TableCell>{job.job.country}</TableCell>
-                    <TableCell>{job.job.salary ?? "N/A"}</TableCell>
-                    <TableCell>{job.job.seniorityLevel}</TableCell>
-                    <TableCell className="max-w-[100px] truncate">
-                      <a
-                        href={job.job.url ?? job.job.sourceUrl!}
-                        target="_blank"
-                      >
-                        {job.job.url ?? job.job.sourceUrl}
-                      </a>
-                    </TableCell>
-                    <TableCell>
-                      <Link
-                        href={`${savedSearchId}/job-details/${job.id}/${userId}`}
-                      >
-                        <Button>Details</Button>
-                      </Link>
-                    </TableCell>
-                  </TableRow>
-                )),
-              )}
-            </TableBody>
+            <ScrollArea className="h-[650px] w-full">
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="dark:text-white">Role</TableHead>
+                  <TableHead className="dark:text-white">City</TableHead>
+                  <TableHead className="dark:text-white">Country</TableHead>
+                  <TableHead className="dark:text-white">Salary</TableHead>
+                  <TableHead className="dark:text-white">Seniority</TableHead>
+                  <TableHead className="dark:text-white">Url</TableHead>
+                  <TableHead className="dark:text-white"></TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {savedSearchJobsData.pages.map((page) =>
+                  page.map((job) => (
+                    <TableRow key={job.id}>
+                      <TableCell className="w-[10%]">{job.job.title}</TableCell>
+                      <TableCell>{job.job.city}</TableCell>
+                      <TableCell>{job.job.country}</TableCell>
+                      <TableCell>{job.job.salary ?? "N/A"}</TableCell>
+                      <TableCell>{job.job.seniorityLevel}</TableCell>
+                      <TableCell className="max-w-[100px] truncate">
+                        <a
+                          href={job.job.url ?? job.job.sourceUrl!}
+                          target="_blank"
+                        >
+                          {job.job.url ?? job.job.sourceUrl}
+                        </a>
+                      </TableCell>
+                      <TableCell>
+                        <Link
+                          href={`${savedSearchId}/job-details/${job.id}/${userId}`}
+                        >
+                          <Button>Details</Button>
+                        </Link>
+                      </TableCell>
+                    </TableRow>
+                  )),
+                )}
+              </TableBody>
+            </ScrollArea>
             <TableFooter>
               <TableRow>
                 <TableCell colSpan={10}>

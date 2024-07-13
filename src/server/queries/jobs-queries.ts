@@ -43,6 +43,30 @@ export async function getSavedSearchJobs(
   });
 }
 
+export async function getSavedSearchJobsTitles(
+  savedSearchId: number,
+  cursor?: number,
+  pageSize = 10,
+) {
+  return await db.query.SavedSearchJobs.findMany({
+    with: {
+      job: {
+        columns: {
+          id: true,
+          title: true,
+        },
+      },
+    },
+    where: (savedSearchJob, { eq, and, lt }) =>
+      and(
+        eq(savedSearchJob.savedSearchId, savedSearchId),
+        cursor ? lt(savedSearchJob.id, cursor) : undefined,
+      ),
+    limit: pageSize,
+    orderBy: (savedSearchJob, { desc }) => desc(savedSearchJob.id),
+  });
+}
+
 export async function getSearchResults(
   userId: string,
   cursor?: number,
@@ -168,5 +192,11 @@ export async function getSavedSearches(
     }
 
     return searchId.id;
+  });
+}
+
+export async function getJob(jobId: number) {
+  return await db.query.Jobs.findFirst({
+    where: (job, { eq }) => eq(job.id, jobId),
   });
 }

@@ -14,6 +14,7 @@ import {
 } from "~/components/ui/table";
 import { Button } from "../ui/button";
 import RequestLoader from "../request-loader/request-loader";
+import Link from "next/link";
 
 interface SavedSearchJobsProps {
   userId: string;
@@ -77,6 +78,7 @@ export default function SavedSearchJobs({
                 <TableHead className="dark:text-white">Salary</TableHead>
                 <TableHead className="dark:text-white">Seniority</TableHead>
                 <TableHead className="dark:text-white">Url</TableHead>
+                <TableHead className="dark:text-white"></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -95,6 +97,13 @@ export default function SavedSearchJobs({
                       >
                         {job.job.url ?? job.job.sourceUrl}
                       </a>
+                    </TableCell>
+                    <TableCell>
+                      <Link
+                        href={`${savedSearchId}/job-details/${job.id}/${userId}`}
+                      >
+                        <Button>Details</Button>
+                      </Link>
                     </TableCell>
                   </TableRow>
                 )),

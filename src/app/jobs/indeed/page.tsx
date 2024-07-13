@@ -6,7 +6,7 @@ import {
 import IndeedForm from "~/components/indeed-form/indeed-form";
 import RequestsQueue from "~/components/requests-queue/requests-queue";
 import { getCurrentUserId } from "~/lib/getCurrentUser";
-import { getRequests } from "~/server/queries/jobs-queries";
+import { getRequests } from "~/server/queries/request-queries";
 
 export default async function Indeed() {
   const userId = await getCurrentUserId();
@@ -27,7 +27,7 @@ export default async function Indeed() {
   });
 
   return (
-    <main className="my-10 flex min-h-screen flex-col items-center bg-background dark:bg-background">
+    <main className="flex flex-col items-center bg-background dark:bg-background">
       <IndeedForm userId={userId} />
       <HydrationBoundary state={dehydrate(queryClient)}>
         <RequestsQueue userId={userId} />

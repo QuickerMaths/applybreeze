@@ -35,7 +35,7 @@ export default async function SavedSearches() {
   });
 
   return (
-    <main className="my-10 flex min-h-screen flex-col items-center bg-background dark:bg-background">
+    <main className="flex flex-col items-center bg-background dark:bg-background">
       <h1>Saved Searches</h1>
       <HydrationBoundary state={dehydrate(queryClient)}>
         <SearchResults userId={userId} />

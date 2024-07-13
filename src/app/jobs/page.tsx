@@ -7,7 +7,7 @@ import {
 
 export default function Jobs() {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center bg-background dark:bg-background">
+    <main className="flex flex-col items-center justify-center bg-background dark:bg-background">
       <TypographyH1 className="text-center text-4xl font-bold text-primary dark:text-primary">
         Serach for new opportunities
       </TypographyH1>

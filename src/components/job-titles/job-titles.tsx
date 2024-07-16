@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { useInfiniteQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "~/components/ui/button";
 import {
   Table,
@@ -13,6 +13,8 @@ import {
   TableFooter,
 } from "~/components/ui/table";
 import { getSavedSearchJobs } from "~/server/queries/jobs-queries";
+import { useRouter, usePathname } from "next/navigation";
+import useCreateQueryString from "~/hooks/useCreateQueryString";
 
 interface JobDetailsLayoutProps {
   savedSearchId: number;
@@ -23,6 +25,10 @@ export default function JobTitles({
   savedSearchId,
   userId,
 }: JobDetailsLayoutProps) {
+  const queryClient = useQueryClient();
+  const router = useRouter();
+  const pathname = usePathname();
+  const createQueryString = useCreateQueryString();
   const {
     data: savedSearchJobsData,
     hasNextPage,
@@ -40,7 +46,7 @@ export default function JobTitles({
       return lastId;
     },
   });
-
+  // prevent table data from refreshing when navigating between job details
   return (
     <div>
       {savedSearchJobsData?.pages && (
@@ -54,7 +60,22 @@ export default function JobTitles({
             {savedSearchJobsData.pages.map((page) =>
               page.map((job) => (
                 <TableRow key={job.id}>
-                  <TableCell>{job.job.title}</TableCell>
+                  <TableCell>
+                    <Button
+                      variant="link"
+                      className="text-left"
+                      onClick={async () => {
+                        router.push(
+                          pathname + "?" + createQueryString({ jobId: job.id }),
+                        );
+                        await queryClient.invalidateQueries({
+                          queryKey: ["job", job.id, userId],
+                        });
+                      }}
+                    >
+                      {job.job.title}
+                    </Button>
+                  </TableCell>
                 </TableRow>
               )),
             )}

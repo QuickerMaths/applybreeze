@@ -35,12 +35,11 @@ export const Jobs = pgTable("Jobs", {
 });
 
 export const applicationStatusEnum = pgEnum("status", [
+  "saved",
   "applied",
   "interviewing",
-  "rejected",
-  "offered",
   "accepted",
-  "declined",
+  "rejected",
 ]);
 
 export const Applications = pgTable("Applications", {

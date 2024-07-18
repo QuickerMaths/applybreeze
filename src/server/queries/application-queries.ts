@@ -47,13 +47,7 @@ export async function deleteApplication(applicationId: number) {
 
 export async function updateApplicationStatus(
   applicationId: number,
-  status:
-    | "applied"
-    | "interviewing"
-    | "rejected"
-    | "offered"
-    | "accepted"
-    | "declined",
+  status: "saved" | "applied" | "interviewing" | "accepted" | "rejected",
 ) {
   return await db
     .update(Applications)

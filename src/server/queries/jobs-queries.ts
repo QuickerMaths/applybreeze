@@ -125,7 +125,7 @@ export async function saveJobSearchResults({
       city: job.location,
       source: "indeed",
       companyName: job.company,
-      description: job.description,
+      description: job.descriptionHTML,
       url: job.externalApplyLink ?? job.url,
       salary: job.salary,
       country: job.searchInput.country,

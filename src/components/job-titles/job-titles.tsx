@@ -46,7 +46,7 @@ export default function JobTitles({
       return lastId;
     },
   });
-  // prevent table data from refreshing when navigating between job details
+
   return (
     <div>
       {savedSearchJobsData?.pages && (

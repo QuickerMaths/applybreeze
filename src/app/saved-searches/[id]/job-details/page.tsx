@@ -4,25 +4,30 @@ import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getJob } from "~/server/queries/jobs-queries";
 import { useSearchParams } from "next/navigation";
-import { getCurrentUserId } from "~/lib/getCurrentUser";
 import { ScrollArea } from "~/components/ui/scroll-area";
 import JobDescription from "~/components/job-description/job-description";
+import ApplicationStatus from "~/components/application-status/application-status";
 
 export default function JobDetails() {
   const searchParams = useSearchParams();
   const jobId = searchParams.get("jobId");
-  const userId = getCurrentUserId();
+  const userId = searchParams.get("userId");
 
-  const { data } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ["job", jobId, userId],
     queryFn: async () => await getJob(+jobId!),
   });
+
+  if (isLoading) {
+    return <p>Loading...</p>;
+  }
 
   return (
     <div className="flex flex-col items-start justify-center gap-y-5 p-5">
       <h1 className="text-3xl font-bold text-primary dark:text-primary">
         Job Details
       </h1>
+      <ApplicationStatus jobId={+jobId!} userId={userId!} />
       <ScrollArea className="flex h-[700px] w-full flex-col items-start justify-center">
         <div className="flex flex-col items-center justify-center gap-y-2">
           {data && (
@@ -70,8 +75,8 @@ export default function JobDetails() {
                 <span className="text-xl font-bold text-gray-500">
                   Description:{" "}
                 </span>
-                <JobDescription description={data.description!} />
               </p>
+              <JobDescription description={data.description!} />
             </div>
           )}
         </div>

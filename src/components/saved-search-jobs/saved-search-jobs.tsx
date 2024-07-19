@@ -102,7 +102,7 @@ export default function SavedSearchJobs({
                     </TableCell>
                     <TableCell>
                       <Link
-                        href={`${savedSearchId}/job-details?${createQueryString({ jobId: job.id })}`}
+                        href={`${savedSearchId}/job-details?${createQueryString({ jobId: job.id, userId })}`}
                       >
                         <Button>Details</Button>
                       </Link>

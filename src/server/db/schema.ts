@@ -34,7 +34,7 @@ export const Jobs = pgTable("Jobs", {
   url: varchar("url", { length: 1024 }),
 });
 
-export const applicationStatusEnum = pgEnum("status", [
+export const applicationStatusEnum = pgEnum("applicationStatus", [
   "saved",
   "applied",
   "interviewing",
@@ -50,9 +50,8 @@ export const Applications = pgTable("Applications", {
   jobId: integer("job_id")
     .notNull()
     .references(() => Jobs.id),
-  status: applicationStatusEnum("status").notNull().default("applied"),
+  status: applicationStatusEnum("applicationStatus").notNull().default("saved"),
   appliedDate: timestamp("applied_date", { withTimezone: true }).defaultNow(),
-  notes: text("notes"),
 });
 
 export const SavedSearches = pgTable("SavedSearches", {

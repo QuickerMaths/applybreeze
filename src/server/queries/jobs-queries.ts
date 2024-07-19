@@ -2,7 +2,13 @@
 
 import { eq, inArray, sql } from "drizzle-orm";
 import { db } from "~/server/db";
-import { Jobs, SavedSearches, SavedSearchJobs, Users } from "../db/schema";
+import {
+  Applications,
+  Jobs,
+  SavedSearches,
+  SavedSearchJobs,
+  Users,
+} from "../db/schema";
 import type { SaveJobSearchParams, SearchJobsParams } from "~/types/indeed";
 
 export async function getSavedSearchFilters(savedSearchId: number) {
@@ -104,6 +110,7 @@ export async function deleteSearchResults(searchResultsId: number) {
     );
   }
 }
+
 export async function saveJobSearchResults({
   jobs,
   userId,
@@ -120,30 +127,46 @@ export async function saveJobSearchResults({
       throw new Error("User not found");
     }
 
-    const jobsToInsert = jobs.map((job) => ({
-      title: job.positionName,
-      city: job.location,
-      source: "indeed",
-      companyName: job.company,
-      description: job.descriptionHTML,
-      url: job.externalApplyLink ?? job.url,
-      salary: job.salary,
-      country: job.searchInput.country,
-      seniorityLevel: "unknown",
-      sourceUrl: job.url,
-    }));
+    const insertedJobs = [];
+    for (const job of jobs) {
+      try {
+        const jobToInsert = {
+          title: job.positionName,
+          city: job.location,
+          source: "indeed",
+          companyName: job.company,
+          description: job.descriptionHTML,
+          url: job.externalApplyLink ?? job.url,
+          salary: job.salary,
+          country: job.searchInput.country,
+          seniorityLevel: "unknown",
+          sourceUrl: job.url,
+        };
 
-    const insertedJobs = await tx
-      .insert(Jobs)
-      .values(jobsToInsert)
-      .returning({ insertedId: Jobs.id });
+        const [insertedJob] = await tx
+          .insert(Jobs)
+          .values(jobToInsert)
+          .returning({ insertedId: Jobs.id });
 
-    const savedSearchJobsToInsert = insertedJobs.map((job) => ({
-      savedSearchId,
-      jobId: job.insertedId,
-    }));
+        insertedJobs.push(insertedJob);
 
-    await tx.insert(SavedSearchJobs).values(savedSearchJobsToInsert);
+        if (!insertedJob?.insertedId) {
+          throw new Error("Could not insert job");
+        }
+
+        await tx.insert(Applications).values({
+          userId,
+          jobId: insertedJob.insertedId,
+        });
+
+        await tx.insert(SavedSearchJobs).values({
+          savedSearchId,
+          jobId: insertedJob.insertedId,
+        });
+      } catch (error) {
+        console.error(`Error inserting job ${job.positionName}:`, error);
+      }
+    }
 
     return {
       savedSearchId,

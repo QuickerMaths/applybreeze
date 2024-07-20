@@ -45,11 +45,18 @@ export async function deleteApplication(applicationId: number) {
     .where(eq(Applications.id, applicationId));
 }
 
+export async function getApplicationStatus(userId: string, jobId: number) {
+  return await db.query.Applications.findFirst({
+    where: (application, { and, eq }) =>
+      and(eq(application.userId, userId), eq(application.jobId, jobId)),
+  });
+}
+
 export async function updateApplicationStatus(
   applicationId: number,
   status: "saved" | "applied" | "interviewing" | "accepted" | "rejected",
 ) {
-  return await db
+  await db
     .update(Applications)
     .set({
       status,

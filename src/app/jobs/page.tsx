@@ -5,20 +5,11 @@ import {
 } from "@tanstack/react-query";
 import React from "react";
 import { getCurrentUserId } from "~/lib/getCurrentUser";
-import {
-  getSavedSearchFilters,
-  getSavedSearchJobs,
-} from "~/server/queries/jobs-queries";
 import SavedSearchJobs from "~/components/saved-search-jobs/saved-search-jobs";
 import { getPendingRequests } from "~/server/queries/request-queries";
+import { getAllJobs } from "~/server/queries/jobs-queries";
 
-interface SavedSearchProps {
-  params: {
-    id: number;
-  };
-}
-
-export default async function SavedSearch({ params }: SavedSearchProps) {
+export default async function SavedSearch() {
   const userId = await getCurrentUserId();
 
   if (!userId) {
@@ -33,9 +24,9 @@ export default async function SavedSearch({ params }: SavedSearchProps) {
   const queryClient = new QueryClient();
 
   await queryClient.prefetchInfiniteQuery({
-    queryKey: ["savedSearchJobs", userId],
+    queryKey: ["jobs", userId],
     queryFn: async ({ pageParam }: { pageParam: number }) =>
-      await getSavedSearchJobs(params.id, pageParam),
+      await getAllJobs(userId, pageParam),
     initialPageParam: 0,
     getNextPageParam: (lastPage, _pages) => {
       const lastId = lastPage[lastPage.length - 1]?.id;
@@ -44,8 +35,6 @@ export default async function SavedSearch({ params }: SavedSearchProps) {
     pages: 1,
   });
 
-  const savedSearchFiltes = await getSavedSearchFilters(params.id);
-
   await queryClient.prefetchQuery({
     queryKey: ["requests", userId],
     queryFn: async () => await getPendingRequests(userId),
@@ -53,22 +42,8 @@ export default async function SavedSearch({ params }: SavedSearchProps) {
 
   return (
     <main className="flex flex-col items-center bg-background dark:bg-background">
-      <div className="mb-5 flex flex-col items-center justify-center">
-        <h2>Applied Job Filters</h2>
-        <div className="flex items-center justify-center gap-3">
-          <p className="text-2xl font-bold text-primary dark:text-primary">
-            <span className="text-gray-500">Role:</span>{" "}
-            {savedSearchFiltes?.role ?? "N/A"}
-          </p>
-          <p className="text-2xl font-semibold text-primary dark:text-primary">
-            <span className="text-gray-500">Location:</span>{" "}
-            {savedSearchFiltes?.city ?? "N/A"},{" "}
-            {savedSearchFiltes?.country ?? "N/A"}
-          </p>
-        </div>
-      </div>
       <HydrationBoundary state={dehydrate(queryClient)}>
-        <SavedSearchJobs userId={userId} savedSearchId={params.id} />
+        <SavedSearchJobs userId={userId} />
       </HydrationBoundary>
     </main>
   );

@@ -1,6 +1,6 @@
 "use server";
 
-import { eq, inArray, sql } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { db } from "~/server/db";
 import {
   Applications,
@@ -11,41 +11,20 @@ import {
 } from "../db/schema";
 import type { SaveJobSearchParams, SearchJobsParams } from "~/types/indeed";
 
-export async function getSavedSearchFilters(savedSearchId: number) {
-  return await db.query.SavedSearches.findFirst({
-    where: (savedSearch, { eq }) => eq(savedSearch.id, savedSearchId),
-  });
-}
-
-export async function getSavedSearchJobs(
-  savedSearchId: number,
+export async function getAllJobs(
+  userId: string,
   cursor?: number,
   pageSize = 10,
 ) {
-  return await db.query.SavedSearchJobs.findMany({
+  return await db.query.Jobs.findMany({
     with: {
-      job: {
-        columns: {
-          id: true,
-          title: true,
-          city: true,
-          country: true,
-          source: true,
-          companyName: true,
-          url: true,
-          salary: true,
-          seniorityLevel: true,
-          sourceUrl: true,
-        },
+      applications: {
+        where: (application, { eq }) => eq(application.userId, userId),
       },
     },
-    where: (savedSearchJob, { eq, and, lt }) =>
-      and(
-        eq(savedSearchJob.savedSearchId, savedSearchId),
-        cursor ? lt(savedSearchJob.id, cursor) : undefined,
-      ),
+    where: (job, { lt }) => (cursor ? lt(job.id, cursor) : undefined),
     limit: pageSize,
-    orderBy: (savedSearchJob, { desc }) => desc(savedSearchJob.id),
+    orderBy: (job, { desc }) => desc(job.id),
   });
 }
 

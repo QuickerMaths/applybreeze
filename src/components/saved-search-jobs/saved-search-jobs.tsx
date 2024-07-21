@@ -2,7 +2,6 @@
 
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { getPendingRequests } from "~/server/queries/request-queries";
-import { getSavedSearchJobs } from "~/server/queries/jobs-queries";
 import {
   Table,
   TableBody,
@@ -16,27 +15,24 @@ import { Button } from "../ui/button";
 import RequestLoader from "../request-loader/request-loader";
 import Link from "next/link";
 import useCreateQueryString from "~/hooks/useCreateQueryString";
+import { getAllJobs } from "~/server/queries/jobs-queries";
 
 interface SavedSearchJobsProps {
   userId: string;
-  savedSearchId: number;
 }
 
-export default function SavedSearchJobs({
-  userId,
-  savedSearchId,
-}: SavedSearchJobsProps) {
+export default function SavedSearchJobs({ userId }: SavedSearchJobsProps) {
   const createQueryString = useCreateQueryString();
   const {
-    data: savedSearchJobsData,
+    data: jobs,
     hasNextPage,
     isFetchingNextPage,
     isFetching,
     fetchNextPage,
   } = useInfiniteQuery({
-    queryKey: ["savedSearchJobs", userId],
+    queryKey: ["jobs", userId],
     queryFn: ({ pageParam }: { pageParam: number }) =>
-      getSavedSearchJobs(savedSearchId, pageParam),
+      getAllJobs(userId, pageParam),
     initialPageParam: 0,
     getNextPageParam: (lastPage, _pages) => {
       if (lastPage.length < 10) return undefined;
@@ -71,7 +67,7 @@ export default function SavedSearchJobs({
           </ul>
         </>
       )}
-      {savedSearchJobsData?.pages ? (
+      {jobs?.pages ? (
         <>
           <Table className="block h-[700px] w-full overflow-y-scroll">
             <TableHeader>
@@ -86,20 +82,17 @@ export default function SavedSearchJobs({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {savedSearchJobsData.pages.map((page) =>
+              {jobs.pages.map((page) =>
                 page.map((job) => (
                   <TableRow key={job.id}>
-                    <TableCell className="w-[10%]">{job.job.title}</TableCell>
-                    <TableCell>{job.job.city}</TableCell>
-                    <TableCell>{job.job.country}</TableCell>
-                    <TableCell>{job.job.salary ?? "N/A"}</TableCell>
-                    <TableCell>{job.job.seniorityLevel}</TableCell>
+                    <TableCell className="w-[10%]">{job.title}</TableCell>
+                    <TableCell>{job.city}</TableCell>
+                    <TableCell>{job.country}</TableCell>
+                    <TableCell>{job.salary ?? "N/A"}</TableCell>
+                    <TableCell>{job.seniorityLevel}</TableCell>
                     <TableCell className="max-w-[100px] truncate">
-                      <a
-                        href={job.job.url ?? job.job.sourceUrl!}
-                        target="_blank"
-                      >
-                        {job.job.url ?? job.job.sourceUrl}
+                      <a href={job.url ?? job.sourceUrl!} target="_blank">
+                        {job.url ?? job.sourceUrl}
                       </a>
                     </TableCell>
                     <TableCell>

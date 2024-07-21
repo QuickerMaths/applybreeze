@@ -73,22 +73,6 @@ export async function getSavedSearchJobsTitles(
   });
 }
 
-export async function getSearchResults(
-  userId: string,
-  cursor?: number,
-  pageSize = 10,
-) {
-  return await db.query.SavedSearches.findMany({
-    where: (savedSearch, { eq, and, lt }) =>
-      and(
-        eq(savedSearch.userId, userId),
-        cursor ? lt(savedSearch.id, cursor) : undefined,
-      ),
-    limit: pageSize,
-    orderBy: (savedSearch, { desc }) => desc(savedSearch.id),
-  });
-}
-
 export async function saveJobs({
   jobs,
   userId,

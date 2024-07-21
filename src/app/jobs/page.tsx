@@ -1,41 +1,45 @@
-import Link from "next/link";
+import React from "react";
+import { getSearchResults } from "~/server/queries/jobs-queries";
 import {
-  TypographyH1,
-  TypographyH3,
-  TypographyP,
-} from "~/components/typography/typography";
+  dehydrate,
+  HydrationBoundary,
+  QueryClient,
+} from "@tanstack/react-query";
+import SearchResults from "~/components/search-results/search-results";
+import { getCurrentUserId } from "~/lib/getCurrentUser";
 
-export default function Jobs() {
+export default async function SavedSearches() {
+  const userId = await getCurrentUserId();
+
+  if (!userId) {
+    return {
+      redirect: {
+        destination: "/",
+        permanent: false,
+      },
+    };
+  }
+
+  const queryClient = new QueryClient();
+
+  await queryClient.prefetchInfiniteQuery({
+    queryKey: ["searchResults", userId],
+    queryFn: async ({ pageParam }: { pageParam: number }) =>
+      await getSearchResults(userId, pageParam),
+    initialPageParam: 0,
+    getNextPageParam: (lastPage, _pages) => {
+      const lastId = lastPage[lastPage.length - 1]?.id;
+      return lastId;
+    },
+    pages: 1,
+  });
+
   return (
-    <main className="flex flex-col items-center justify-center bg-background dark:bg-background">
-      <TypographyH1 className="text-center text-4xl font-bold text-primary dark:text-primary">
-        Serach for new opportunities
-      </TypographyH1>
-      <TypographyP className="text-center text-lg text-gray-500 dark:text-gray-400">
-        Find the job that you love
-      </TypographyP>
-      <div className="grid-row-1 mt-5 grid grid-cols-2 gap-5">
-        <Link href="/jobs/linkedin">
-          <div className="flex flex-col items-center justify-center border-[1px] border-black bg-secondary p-5 dark:border-white">
-            <TypographyH3
-              tag="h2"
-              className="text-2xl font-bold text-primary text-white dark:text-primary"
-            >
-              LinkedIn
-            </TypographyH3>
-          </div>
-        </Link>
-        <Link href="/jobs/indeed">
-          <div className="flex flex-col items-center justify-center border-[1px] border-black bg-secondary p-5 dark:border-white">
-            <TypographyH3
-              tag="h2"
-              className="text-2xl font-bold text-primary text-white dark:text-primary"
-            >
-              Indeed
-            </TypographyH3>
-          </div>
-        </Link>
-      </div>
+    <main className="flex flex-col items-center bg-background dark:bg-background">
+      <h1>Saved Searches</h1>
+      <HydrationBoundary state={dehydrate(queryClient)}>
+        <SearchResults userId={userId} />
+      </HydrationBoundary>
     </main>
   );
 }

@@ -41,7 +41,7 @@ export default function SearchResult({
         </p>
       </div>
       <div className="flex items-center justify-center gap-2">
-        <Link href={`/saved-searches/${jobSearchId}`}>
+        <Link href={`/jobs/${jobSearchId}`}>
           <Button className="flex w-full items-center justify-center gap-x-2 bg-green-500 text-white hover:bg-green-700">
             View Jobs
             <EyeOpenIcon className="h-5 w-5" />

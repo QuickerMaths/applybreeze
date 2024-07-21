@@ -89,28 +89,6 @@ export async function getSearchResults(
   });
 }
 
-export async function deleteSearchResults(searchResultsId: number) {
-  const jobIds = await db
-    .select({ jobId: SavedSearchJobs.jobId })
-    .from(SavedSearchJobs)
-    .where(eq(SavedSearchJobs.savedSearchId, searchResultsId));
-
-  await db
-    .delete(SavedSearchJobs)
-    .where(eq(SavedSearchJobs.savedSearchId, searchResultsId));
-
-  await db.delete(SavedSearches).where(eq(SavedSearches.id, searchResultsId));
-
-  if (jobIds.length > 0) {
-    await db.delete(Jobs).where(
-      inArray(
-        Jobs.id,
-        jobIds.map((job) => job.jobId),
-      ),
-    );
-  }
-}
-
 export async function saveJobs({
   jobs,
   userId,

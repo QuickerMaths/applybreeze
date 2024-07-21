@@ -4,7 +4,7 @@ import { validateQueryParams } from "~/lib/validateQueryParams";
 import { indeedSearchSchema, indeedJobSchema } from "~/schemas/indeed";
 import { getAuth } from "@clerk/nextjs/server";
 import {
-  getSavedSearches,
+  getSavedSearchId,
   saveJobSearchResults,
 } from "~/server/queries/jobs-queries";
 import {
@@ -39,7 +39,7 @@ export async function POST(request: NextRequest): Promise<Response> {
     maxConcurrency,
   };
 
-  const savedSearchId = await getSavedSearches(userId, validatedQuery);
+  const savedSearchId = await getSavedSearchId(userId, validatedQuery);
 
   const requestId = await createSearchRequest(savedSearchId, userId);
 

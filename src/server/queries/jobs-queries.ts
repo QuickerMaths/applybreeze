@@ -175,7 +175,7 @@ export async function saveJobSearchResults({
   });
 }
 
-export async function getSavedSearches(
+export async function getSavedSearchId(
   userId: string,
   jobsParams: SearchJobsParams,
 ) {

@@ -50,6 +50,8 @@ export default function SavedSearchJobs({
     queryFn: async () => await getPendingRequests(userId),
   });
 
+  // TODO: create proper naviagtion to the jobs-details (only jobs that fit current filters and sorting should be displayed)
+
   return (
     <div className="mx-auto flex flex-col items-center justify-center">
       {pendingRequestsData && pendingRequestsData.length > 0 && (

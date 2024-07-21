@@ -15,7 +15,7 @@ interface JobDetailsLayoutProps {
   };
   children: React.ReactNode;
 }
-
+//does not work, pass it in queryParam if needed
 export default async function JobDetailsLayout({
   params: { id: savedSearchId },
   children,

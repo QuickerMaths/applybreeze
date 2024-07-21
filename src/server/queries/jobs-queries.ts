@@ -111,7 +111,7 @@ export async function deleteSearchResults(searchResultsId: number) {
   }
 }
 
-export async function saveJobSearchResults({
+export async function saveJobs({
   jobs,
   userId,
   savedSearchId,

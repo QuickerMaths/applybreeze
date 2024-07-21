@@ -3,10 +3,7 @@ import { validateJobs } from "~/lib/validateJobs";
 import { validateQueryParams } from "~/lib/validateQueryParams";
 import { indeedSearchSchema, indeedJobSchema } from "~/schemas/indeed";
 import { getAuth } from "@clerk/nextjs/server";
-import {
-  getSavedSearchId,
-  saveJobSearchResults,
-} from "~/server/queries/jobs-queries";
+import { getSavedSearchId, saveJobs } from "~/server/queries/jobs-queries";
 import {
   createSearchRequest,
   updateSearchRequestStatus,
@@ -50,7 +47,7 @@ export async function POST(request: NextRequest): Promise<Response> {
     const validatedJobs = validateJobs(items, indeedJobSchema);
 
     if (validatedJobs.length > 0) {
-      await saveJobSearchResults({
+      await saveJobs({
         jobs: validatedJobs,
         userId,
         savedSearchId,

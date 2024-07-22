@@ -20,6 +20,10 @@ export async function getAllJobs(
     with: {
       applications: {
         where: (application, { eq }) => eq(application.userId, userId),
+        columns: {
+          appliedDate: true,
+          status: true,
+        },
       },
     },
     where: (job, { lt }) => (cursor ? lt(job.id, cursor) : undefined),

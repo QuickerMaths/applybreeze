@@ -27,7 +27,7 @@ export default function JobDetails() {
       <h1 className="text-3xl font-bold text-primary dark:text-primary">
         Job Details
       </h1>
-      <ApplicationStatus jobId={+jobId!} userId={userId!} />
+      <ApplicationStatus jobId={+jobId!} />
       <ScrollArea className="flex h-[700px] w-full flex-col items-start justify-center">
         <div className="flex flex-col items-center justify-center gap-y-2">
           {data && (

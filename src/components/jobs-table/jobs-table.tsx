@@ -74,11 +74,10 @@ export default function JobsTable({ userId }: JobsTableProps) {
           {table.getRowModel().rows.map((row) => (
             <TableRow key={row.id}>
               {row.getVisibleCells().map((cell) => (
-                <TableCell key={cell.id}>
+                <TableCell className="truncate" key={cell.id}>
                   {flexRender(cell.column.columnDef.cell, cell.getContext())}
                 </TableCell>
               ))}
-
               <TableCell>
                 <Link
                   href={`/job-details?${createQueryString({ jobId: row.original.id, userId })}`}

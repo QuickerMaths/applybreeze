@@ -21,7 +21,13 @@ export default async function SavedSearch() {
     };
   }
 
-  const queryClient = new QueryClient();
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        gcTime: 1000 * 60 * 60,
+      },
+    },
+  });
 
   await queryClient.prefetchInfiniteQuery({
     queryKey: ["jobs", userId],

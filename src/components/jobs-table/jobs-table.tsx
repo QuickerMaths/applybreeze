@@ -22,6 +22,7 @@ import {
 import type { JobsWithApplicationsType } from "~/types/jobs";
 import useJobsColumns from "~/lib/useColumnsJobs";
 import Link from "next/link";
+import DeleteJob from "../delete-job/delete-job";
 
 interface JobsTableProps {
   userId: string;
@@ -67,6 +68,7 @@ export default function JobsTable({ userId }: JobsTableProps) {
                 </TableHead>
               ))}
               <TableHead className="dark:text-white">Details</TableHead>
+              <TableHead className="dark:text-white">Delete</TableHead>
             </TableRow>
           ))}
         </TableHeader>
@@ -74,7 +76,7 @@ export default function JobsTable({ userId }: JobsTableProps) {
           {table.getRowModel().rows.map((row) => (
             <TableRow key={row.id}>
               {row.getVisibleCells().map((cell) => (
-                <TableCell className="truncate" key={cell.id}>
+                <TableCell key={cell.id}>
                   {flexRender(cell.column.columnDef.cell, cell.getContext())}
                 </TableCell>
               ))}
@@ -84,6 +86,9 @@ export default function JobsTable({ userId }: JobsTableProps) {
                 >
                   <Button>Details</Button>
                 </Link>
+              </TableCell>
+              <TableCell>
+                <DeleteJob jobId={row.original.id} userId={userId} />
               </TableCell>
             </TableRow>
           ))}

@@ -1,26 +1,30 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
+import { useForm, Controller } from "react-hook-form";
+import { Form, FormField, FormItem } from "~/components/ui/form";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "~/components/ui/dropdown-menu";
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/ui/select";
 import type { ApplicationStatusType } from "~/types/applications";
-import { Button } from "../ui/button";
 import { cn } from "~/lib/utils";
 import { useQueryClient, useMutation, useQuery } from "@tanstack/react-query";
 import {
   getApplicationStatus,
   updateApplicationStatus,
 } from "~/server/queries/application-queries";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 
-interface StatusDropdownProps {
+interface StatusSelectProps {
   jobId: number;
 }
 
-export default function StatusSelect({ jobId }: StatusDropdownProps) {
+export default function StatusSelect({ jobId }: StatusSelectProps) {
   const queryClient = useQueryClient();
   const statuses: ApplicationStatusType[] = [
     "saved",
@@ -30,19 +34,28 @@ export default function StatusSelect({ jobId }: StatusDropdownProps) {
     "accepted",
   ];
 
+  const applicationStatusSchema = z.object({
+    applicationStatus: z.enum([
+      "saved",
+      "applied",
+      "interviewing",
+      "rejected",
+      "accepted",
+    ]),
+  });
+
   const {
     data: application,
     isLoading,
     isRefetching,
   } = useQuery({
     queryKey: ["applicationStatus", jobId],
-    queryFn: async () => await getApplicationStatus(jobId),
+    queryFn: () => getApplicationStatus(jobId),
   });
 
   const mutation = useMutation({
-    mutationFn: async (status: ApplicationStatusType) => {
-      return await updateApplicationStatus(jobId, status);
-    },
+    mutationFn: (status: ApplicationStatusType) =>
+      updateApplicationStatus(jobId, status),
     onSettled: async () => {
       await queryClient.invalidateQueries({
         queryKey: ["applicationStatus", jobId],
@@ -50,43 +63,77 @@ export default function StatusSelect({ jobId }: StatusDropdownProps) {
     },
   });
 
+  const form = useForm<z.infer<typeof applicationStatusSchema>>({
+    resolver: zodResolver(applicationStatusSchema),
+  });
+
+  const onSubmit = (values: z.infer<typeof applicationStatusSchema>) => {
+    mutation.mutate(values.applicationStatus);
+  };
+
+  useEffect(() => {
+    if (application?.status) {
+      form.setValue("applicationStatus", application.status);
+    }
+  }, [application, form]);
+
   if (isLoading || isRefetching) {
     return <p>Loading...</p>;
   }
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button
-          variant="outline"
-          className={cn(
-            application?.status === "saved" && "bg-blue-500",
-            application?.status === "applied" && "bg-orange-300",
-            application?.status === "interviewing" && "bg-yellow-700",
-            application?.status === "accepted" && "bg-green-500",
-            application?.status === "rejected" && "bg-red-500",
-            "w-full",
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)}>
+        <FormField
+          control={form.control}
+          name="applicationStatus"
+          render={() => (
+            <FormItem>
+              <Controller
+                name="applicationStatus"
+                control={form.control}
+                render={({ field }) => (
+                  <Select
+                    onValueChange={async (value: ApplicationStatusType) => {
+                      field.onChange(value);
+                      await form.handleSubmit(onSubmit)();
+                    }}
+                    value={field.value}
+                  >
+                    <SelectTrigger
+                      className={cn(
+                        "flex w-full items-center justify-center gap-2",
+                        application?.status === "saved" && "bg-blue-500",
+                        application?.status === "applied" && "bg-orange-300",
+                        application?.status === "interviewing" &&
+                          "bg-yellow-700",
+                        application?.status === "accepted" && "bg-green-500",
+                        application?.status === "rejected" && "bg-red-500",
+                      )}
+                    >
+                      {application?.status &&
+                        application.status.charAt(0).toUpperCase() +
+                          application.status.slice(1)}
+                    </SelectTrigger>
+                    <SelectContent>
+                      {statuses.map((status) => (
+                        <SelectItem
+                          value={status}
+                          key={status}
+                          className="w-full disabled:opacity-50"
+                          disabled={status === application?.status}
+                        >
+                          {status.charAt(0).toUpperCase() + status.slice(1)}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+            </FormItem>
           )}
-        >
-          {application?.status &&
-            application.status.charAt(0).toUpperCase() +
-              application.status.slice(1)}
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent>
-        {statuses.map((status) => (
-          <DropdownMenuItem asChild key={status as string}>
-            <Button
-              className="w-full disabled:opacity-100"
-              variant="ghost"
-              onClick={() => mutation.mutate(status)}
-              disabled={status === application?.status}
-            >
-              {status.charAt(0).toUpperCase() + status.slice(1)}
-            </Button>
-          </DropdownMenuItem>
-        ))}
-      </DropdownMenuContent>
-    </DropdownMenu>
+        />
+      </form>
+    </Form>
   );
 }

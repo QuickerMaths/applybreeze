@@ -26,7 +26,7 @@ export const Jobs = pgTable("Jobs", {
   city: varchar("city", { length: 255 }),
   salary: varchar("salary", { length: 255 }).notNull().default("Unknown"),
   country: varchar("country", { length: 255 }),
-  source: varchar("source", { length: 255 }),
+  source: varchar("source", { length: 255 }).notNull(),
   sourceUrl: varchar("source_url", { length: 1024 }),
   seniorityLevel: varchar("seniority_level", { length: 255 })
     .notNull()

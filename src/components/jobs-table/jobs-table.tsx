@@ -72,7 +72,7 @@ export default function JobsTable({ userId }: JobsTableProps) {
         Saved Jobs
       </h2>
       <JobsFilters table={table} />
-      <Table className="block h-[700px] w-full overflow-y-scroll">
+      <Table className="block h-[600px] w-full overflow-y-scroll">
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
             <TableRow key={headerGroup.id}>

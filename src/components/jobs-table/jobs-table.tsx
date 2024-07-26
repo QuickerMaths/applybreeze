@@ -1,7 +1,7 @@
 "use client";
 
 import { useInfiniteQuery } from "@tanstack/react-query";
-import React from "react";
+import React, { useState } from "react";
 import useCreateQueryString from "~/hooks/useCreateQueryString";
 import { getAllJobs } from "~/server/queries/jobs-queries";
 import { Button } from "../ui/button";
@@ -16,13 +16,16 @@ import {
 } from "../ui/table";
 import {
   getCoreRowModel,
+  getFilteredRowModel,
   useReactTable,
   flexRender,
+  type ColumnFiltersState,
 } from "@tanstack/react-table";
 import type { JobsWithApplicationsType } from "~/types/jobs";
 import useJobsColumns from "~/lib/useColumnsJobs";
 import Link from "next/link";
 import DeleteJob from "../delete-job/delete-job";
+import JobsFilters from "../jobs-filters/jobs-filters";
 
 interface JobsTableProps {
   userId: string;
@@ -31,6 +34,7 @@ interface JobsTableProps {
 export default function JobsTable({ userId }: JobsTableProps) {
   const createQueryString = useCreateQueryString();
   const jobsColumns = useJobsColumns();
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const {
     data: jobs,
     hasNextPage,
@@ -53,14 +57,21 @@ export default function JobsTable({ userId }: JobsTableProps) {
   const table = useReactTable<JobsWithApplicationsType>({
     data: jobs?.pages.flatMap((page) => page) ?? [],
     columns: jobsColumns,
+    state: {
+      columnFilters,
+    },
     getCoreRowModel: getCoreRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    onColumnFiltersChange: setColumnFilters,
     manualPagination: true,
   });
 
-  console.log(jobs?.pages.flatMap((page) => page));
-
   return (
     <div>
+      <h2 className="mb-2 text-center text-2xl font-bold text-primary dark:text-primary">
+        Saved Jobs
+      </h2>
+      <JobsFilters table={table} />
       <Table className="block h-[700px] w-full overflow-y-scroll">
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (

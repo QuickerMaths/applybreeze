@@ -3,7 +3,7 @@
 import type { JobsWithApplicationsType } from "~/types/jobs";
 import { createColumnHelper } from "@tanstack/react-table";
 import { useMemo } from "react";
-import StatusDropdown from "~/components/status-dropdown/status-dropdown";
+import StatusSelect from "~/components/status-select/status-select";
 
 const jobsColumnsHelper = createColumnHelper<JobsWithApplicationsType>();
 
@@ -30,7 +30,9 @@ export default function useJobsColumns() {
             }),
             jobsColumnsHelper.accessor("source", {
                 header: "Source",
-                cell: (props) => props.getValue(),
+                cell: (props) =>
+                    props?.getValue()?.charAt(0).toUpperCase() +
+                    props?.getValue()?.slice(1),
             }),
             jobsColumnsHelper.accessor("seniorityLevel", {
                 header: "Experience",
@@ -54,7 +56,7 @@ export default function useJobsColumns() {
             }),
             jobsColumnsHelper.accessor((row) => row.id, {
                 header: "Status",
-                cell: (props) => <StatusDropdown jobId={props.getValue()} />,
+                cell: (props) => <StatusSelect jobId={props.getValue()} />,
             }),
         ],
         [],

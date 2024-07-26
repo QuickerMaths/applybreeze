@@ -20,7 +20,7 @@ interface StatusDropdownProps {
   jobId: number;
 }
 
-export default function StatusDropdown({ jobId }: StatusDropdownProps) {
+export default function StatusSelect({ jobId }: StatusDropdownProps) {
   const queryClient = useQueryClient();
   const statuses: ApplicationStatusType[] = [
     "saved",

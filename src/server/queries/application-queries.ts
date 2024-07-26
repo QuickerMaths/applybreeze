@@ -3,6 +3,7 @@
 import { Applications } from "~/server/db/schema";
 import { db } from "~/server/db";
 import { eq } from "drizzle-orm";
+import { ApplicationStatusType } from "~/types/applications";
 
 export async function createApplication(userId: string, jobId: number) {
   const applicationId = await db
@@ -53,7 +54,7 @@ export async function getApplicationStatus(jobId: number) {
 
 export async function updateApplicationStatus(
   applicationId: number,
-  status: "saved" | "applied" | "interviewing" | "accepted" | "rejected",
+  status: ApplicationStatusType,
 ) {
   await db
     .update(Applications)

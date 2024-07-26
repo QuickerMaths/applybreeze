@@ -8,7 +8,6 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
 } from "~/components/ui/select";
 import type { ApplicationStatusType } from "~/types/applications";
 import { cn } from "~/lib/utils";
@@ -19,6 +18,7 @@ import {
 } from "~/server/queries/application-queries";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { applicationStatuses } from "~/constants/applications";
 
 interface StatusSelectProps {
   jobId: number;
@@ -26,22 +26,9 @@ interface StatusSelectProps {
 
 export default function StatusSelect({ jobId }: StatusSelectProps) {
   const queryClient = useQueryClient();
-  const statuses: ApplicationStatusType[] = [
-    "saved",
-    "applied",
-    "interviewing",
-    "rejected",
-    "accepted",
-  ];
 
   const applicationStatusSchema = z.object({
-    applicationStatus: z.enum([
-      "saved",
-      "applied",
-      "interviewing",
-      "rejected",
-      "accepted",
-    ]),
+    applicationStatus: z.enum(applicationStatuses),
   });
 
   const {
@@ -116,7 +103,7 @@ export default function StatusSelect({ jobId }: StatusSelectProps) {
                           application.status.slice(1)}
                     </SelectTrigger>
                     <SelectContent>
-                      {statuses.map((status) => (
+                      {applicationStatuses.map((status) => (
                         <SelectItem
                           value={status}
                           key={status}

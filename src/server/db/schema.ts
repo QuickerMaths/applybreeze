@@ -9,6 +9,8 @@ import {
   pgEnum,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
+import { applicationStatuses } from "~/constants/applications";
+import { jobSources } from "~/constants/jobs";
 
 export const Users = pgTable("Users", {
   id: varchar("id", { length: 255 }).primaryKey().notNull(),
@@ -19,6 +21,8 @@ export const Users = pgTable("Users", {
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
 });
+
+export const jobSourcesEnum = pgEnum("jobSources", jobSources);
 
 export const Jobs = pgTable("Jobs", {
   id: serial("id").primaryKey().notNull(),
@@ -36,13 +40,10 @@ export const Jobs = pgTable("Jobs", {
   url: varchar("url", { length: 1024 }),
 });
 
-export const applicationStatusEnum = pgEnum("applicationStatus", [
-  "saved",
-  "applied",
-  "interviewing",
-  "accepted",
-  "rejected",
-]);
+export const applicationStatusEnum = pgEnum(
+  "applicationStatus",
+  applicationStatuses,
+);
 
 export const Applications = pgTable("Applications", {
   id: serial("id").notNull().primaryKey(),

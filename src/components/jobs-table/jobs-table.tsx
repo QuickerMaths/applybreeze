@@ -54,7 +54,10 @@ export default function JobsTable({ userId }: JobsTableProps) {
     data: jobs?.pages.flatMap((page) => page) ?? [],
     columns: jobsColumns,
     getCoreRowModel: getCoreRowModel(),
+    manualPagination: true,
   });
+
+  console.log(jobs?.pages.flatMap((page) => page));
 
   return (
     <div>
@@ -95,7 +98,7 @@ export default function JobsTable({ userId }: JobsTableProps) {
         </TableBody>
         <TableFooter>
           <TableRow>
-            <TableCell colSpan={10}>
+            <TableCell colSpan={11}>
               {hasNextPage ? (
                 <Button
                   onClick={() => fetchNextPage()}

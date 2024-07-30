@@ -5,7 +5,6 @@ import {
     text,
     integer,
     timestamp,
-    boolean,
     pgEnum,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
@@ -54,7 +53,9 @@ export const Applications = pgTable("Applications", {
         .notNull()
         .references(() => Jobs.id),
     status: applicationStatusEnum("applicationStatus").notNull().default("saved"),
-    appliedDate: timestamp("applied_date", { withTimezone: true }).defaultNow(),
+    savedAt: timestamp("saved_at", { withTimezone: true }).defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+    appliedDate: timestamp("applied_date", { withTimezone: true }),
 });
 
 export const SavedSearches = pgTable("SavedSearches", {

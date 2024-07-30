@@ -28,7 +28,7 @@ import Link from "next/link";
 import DeleteJob from "../delete-job/delete-job";
 import JobsFilters from "../jobs-filters/jobs-filters";
 import { cn } from "~/lib/utils";
-import { JobsWithApplicationsType } from "~/types/jobs";
+import type { JobsWithApplicationsType } from "~/types/jobs";
 
 interface JobsTableProps {
   userId: string;
@@ -131,7 +131,7 @@ export default function JobsTable({ userId }: JobsTableProps) {
               ))}
               <TableCell>
                 <Link
-                  href={`/job-details?${createQueryString({ jobId: row.original.id, userId })}`}
+                  href={`jobs/job-details?${createQueryString({ jobId: row.original.id, userId })}`}
                 >
                   <Button>Details</Button>
                 </Link>

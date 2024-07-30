@@ -36,11 +36,7 @@ export async function getAllJobs(
   });
 }
 
-export async function getSavedSearchJobsTitles(
-  savedSearchId: number,
-  cursor?: number,
-  pageSize = 10,
-) {
+export async function getSavedSearchJobsTitles(cursor?: number, pageSize = 10) {
   return await db.query.SavedSearchJobs.findMany({
     with: {
       job: {
@@ -50,11 +46,8 @@ export async function getSavedSearchJobsTitles(
         },
       },
     },
-    where: (savedSearchJob, { eq, and, lt }) =>
-      and(
-        eq(savedSearchJob.savedSearchId, savedSearchId),
-        cursor ? lt(savedSearchJob.id, cursor) : undefined,
-      ),
+    where: (savedSearchJob, { lt }) =>
+      cursor ? lt(savedSearchJob.id, cursor) : undefined,
     limit: pageSize,
     orderBy: (savedSearchJob, { desc }) => desc(savedSearchJob.id),
   });

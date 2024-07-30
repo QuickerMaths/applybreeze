@@ -55,11 +55,19 @@ export default function ApplicationStatus({ jobId }: ApplicationStatusProps) {
           <>
             <BreadcrumbItem
               className={cn(
-                status === "saved" && "bg-blue-500",
-                status === "applied" && "bg-orange-300",
-                status === "interviewing" && "bg-yellow-700",
-                status === "accepted" && "bg-green-500",
-                status === "rejected" && "bg-red-500",
+                currentStatus === status && status === "saved" && "bg-blue-500",
+                currentStatus === status &&
+                  status === "applied" &&
+                  "bg-orange-300",
+                currentStatus === status &&
+                  status === "interviewing" &&
+                  "bg-yellow-700",
+                currentStatus === status &&
+                  status === "accepted" &&
+                  "bg-green-500",
+                currentStatus === status &&
+                  status === "rejected" &&
+                  "bg-red-500",
                 "rounded-md",
               )}
             >
@@ -69,12 +77,14 @@ export default function ApplicationStatus({ jobId }: ApplicationStatusProps) {
                 disabled={status === currentStatus}
                 className="rounded-md disabled:opacity-100"
               >
-                Saved
+                {status.charAt(0).toUpperCase() + status.slice(1)}
               </Button>
             </BreadcrumbItem>
-            <BreadcrumbSeparator>
-              <ChevronRight />
-            </BreadcrumbSeparator>
+            {status !== "accepted" && (
+              <BreadcrumbSeparator>
+                <ChevronRight />
+              </BreadcrumbSeparator>
+            )}
           </>
         ))}
       </BreadcrumbList>

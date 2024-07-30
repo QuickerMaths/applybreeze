@@ -17,14 +17,10 @@ import { useRouter, usePathname } from "next/navigation";
 import useCreateQueryString from "~/hooks/useCreateQueryString";
 
 interface JobDetailsLayoutProps {
-  savedSearchId: number;
   userId: string;
 }
 
-export default function JobTitles({
-  savedSearchId,
-  userId,
-}: JobDetailsLayoutProps) {
+export default function JobTitles({ userId }: JobDetailsLayoutProps) {
   const queryClient = useQueryClient();
   const router = useRouter();
   const pathname = usePathname();
@@ -38,7 +34,7 @@ export default function JobTitles({
   } = useInfiniteQuery({
     queryKey: ["jobTitles", userId],
     queryFn: ({ pageParam }: { pageParam: number }) =>
-      getSavedSearchJobsTitles(savedSearchId, pageParam),
+      getSavedSearchJobsTitles(pageParam),
     initialPageParam: 0,
     getNextPageParam: (lastPage, _pages) => {
       if (lastPage.length < 10) return undefined;

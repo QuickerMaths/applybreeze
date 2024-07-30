@@ -3,7 +3,7 @@
 import { createColumnHelper } from "@tanstack/react-table";
 import { useMemo } from "react";
 import JobTitleButton from "~/components/job-title-button/job-title-button";
-import { SavedSearchJobsType } from "~/types/saved-searches";
+import type { SavedSearchJobsType } from "~/types/saved-searches";
 
 const titlesColumnsHelper = createColumnHelper<SavedSearchJobsType>();
 
@@ -17,7 +17,7 @@ export default function useColumnsTitles(userId: string) {
         ),
       }),
     ],
-    [],
+    [userId],
   );
 
   return titlesColumns;

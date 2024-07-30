@@ -21,10 +21,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { applicationStatuses } from "~/constants/applications";
 
 interface StatusSelectProps {
+  userId: string;
   jobId: number;
 }
 
-export default function StatusSelect({ jobId }: StatusSelectProps) {
+export default function StatusSelect({ userId, jobId }: StatusSelectProps) {
   const queryClient = useQueryClient();
 
   const applicationStatusSchema = z.object({
@@ -41,9 +42,12 @@ export default function StatusSelect({ jobId }: StatusSelectProps) {
   });
 
   const mutation = useMutation({
-    mutationFn: (status: ApplicationStatusType) =>
-      updateApplicationStatus(jobId, status),
+    mutationFn: (applicationStatus: ApplicationStatusType) =>
+      updateApplicationStatus(jobId, applicationStatus),
     onSettled: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: ["jobs", userId],
+      });
       await queryClient.invalidateQueries({
         queryKey: ["applicationStatus", jobId],
       });

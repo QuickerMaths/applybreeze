@@ -1,7 +1,7 @@
 "use client";
 
 import { useInfiniteQuery } from "@tanstack/react-query";
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import useCreateQueryString from "~/hooks/useCreateQueryString";
 import { getAllJobs } from "~/server/queries/jobs-queries";
 import { Button } from "../ui/button";
@@ -20,12 +20,15 @@ import {
   useReactTable,
   flexRender,
   type ColumnFiltersState,
+  getSortedRowModel,
+  type SortingState,
 } from "@tanstack/react-table";
-import type { JobsWithApplicationsType } from "~/types/jobs";
 import useJobsColumns from "~/lib/useColumnsJobs";
 import Link from "next/link";
 import DeleteJob from "../delete-job/delete-job";
 import JobsFilters from "../jobs-filters/jobs-filters";
+import { cn } from "~/lib/utils";
+import { JobsWithApplicationsType } from "~/types/jobs";
 
 interface JobsTableProps {
   userId: string;
@@ -33,8 +36,9 @@ interface JobsTableProps {
 
 export default function JobsTable({ userId }: JobsTableProps) {
   const createQueryString = useCreateQueryString();
-  const jobsColumns = useJobsColumns();
+  const jobsColumns = useJobsColumns(userId);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [sorting, setSorting] = useState<SortingState>([]);
   const {
     data: jobs,
     hasNextPage,
@@ -54,15 +58,23 @@ export default function JobsTable({ userId }: JobsTableProps) {
     },
   });
 
-  const table = useReactTable<JobsWithApplicationsType>({
-    data: jobs?.pages.flatMap((page) => page) ?? [],
+  const flatData = useMemo(
+    () => jobs?.pages?.flatMap((page) => page) ?? [],
+    [jobs],
+  );
+
+  const table = useReactTable({
+    data: flatData as JobsWithApplicationsType[],
     columns: jobsColumns,
     state: {
       columnFilters,
+      sorting,
     },
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
+    getSortedRowModel: getSortedRowModel(),
     onColumnFiltersChange: setColumnFilters,
+    onSortingChange: setSorting,
     manualPagination: true,
   });
 
@@ -72,13 +84,36 @@ export default function JobsTable({ userId }: JobsTableProps) {
         Saved Jobs
       </h2>
       <JobsFilters table={table} />
-      <Table className="block h-[600px] w-full overflow-y-scroll">
+      <Table className="block h-[500px] w-full overflow-y-scroll">
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
             <TableRow key={headerGroup.id}>
               {headerGroup.headers.map((column) => (
-                <TableHead className="dark:text-white" key={column.id}>
-                  {column.column.columnDef.header as string}
+                <TableHead
+                  className={cn(
+                    column.column.getCanSort() && "cursor-pointer select-none",
+                    "dark:text-white",
+                  )}
+                  onClick={column.column.getToggleSortingHandler()}
+                  title={
+                    column.column.getCanSort()
+                      ? column.column.getNextSortingOrder() === "asc"
+                        ? "Sort ascending"
+                        : column.column.getNextSortingOrder() === "desc"
+                          ? "Sort descending"
+                          : "Clear sort"
+                      : undefined
+                  }
+                  key={column.id}
+                >
+                  {flexRender(
+                    column.column.columnDef.header,
+                    column.getContext(),
+                  )}
+                  {{
+                    asc: " 🔼",
+                    desc: " 🔽",
+                  }[column.column.getIsSorted() as string] ?? null}
                 </TableHead>
               ))}
               <TableHead className="dark:text-white">Details</TableHead>

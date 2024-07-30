@@ -7,7 +7,7 @@ import StatusSelect from "~/components/status-select/status-select";
 
 const jobsColumnsHelper = createColumnHelper<JobsWithApplicationsType>();
 
-export default function useJobsColumns() {
+export default function useJobsColumns(userId: string) {
   const jobsColumns = useMemo(
     () => [
       jobsColumnsHelper.accessor("title", {
@@ -46,6 +46,7 @@ export default function useJobsColumns() {
       }),
       jobsColumnsHelper.accessor((row) => row.url ?? row.sourceUrl, {
         header: "Url",
+        enableSorting: false,
         cell: (props) => (
           <div className="max-w-[100px] truncate">
             <a href={props.getValue()!} target="_blank">
@@ -54,12 +55,15 @@ export default function useJobsColumns() {
           </div>
         ),
       }),
-      jobsColumnsHelper.accessor((row) => row.id, {
+      jobsColumnsHelper.accessor("applications.status", {
+        id: "applications",
         header: "Status",
-        cell: (props) => <StatusSelect jobId={props.getValue()} />,
+        cell: (props) => (
+          <StatusSelect userId={userId} jobId={props.row.original.id} />
+        ),
       }),
     ],
-    [],
+    [userId],
   );
 
   return jobsColumns;

@@ -16,15 +16,23 @@ export async function getAllJobs(
   cursor?: number,
   pageSize = 10,
 ) {
-  return await db.query.Jobs.findMany({
+  const jobs = await db.query.Jobs.findMany({
     with: {
       applications: {
         where: (application, { eq }) => eq(application.userId, userId),
+        limit: 1,
       },
     },
     where: (job, { lt }) => (cursor ? lt(job.id, cursor) : undefined),
     limit: pageSize,
     orderBy: (job, { desc }) => desc(job.id),
+  });
+
+  return jobs.map((job) => {
+    return {
+      ...job,
+      applications: job.applications[0],
+    };
   });
 }
 

@@ -1,7 +1,7 @@
 "use client";
 
-import React from "react";
-import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
+import React, { useMemo, useState } from "react";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import { Button } from "~/components/ui/button";
 import {
   Table,
@@ -13,18 +13,24 @@ import {
   TableFooter,
 } from "~/components/ui/table";
 import { getSavedSearchJobsTitles } from "~/server/queries/jobs-queries";
-import { useRouter, usePathname } from "next/navigation";
-import useCreateQueryString from "~/hooks/useCreateQueryString";
+import {
+  flexRender,
+  getCoreRowModel,
+  getFilteredRowModel,
+  getSortedRowModel,
+  type SortingState,
+  useReactTable,
+} from "@tanstack/react-table";
+import useColumnsTitles from "~/lib/useColumnsTitles";
+import { cn } from "~/lib/utils";
 
 interface JobDetailsLayoutProps {
   userId: string;
 }
 
 export default function JobTitles({ userId }: JobDetailsLayoutProps) {
-  const queryClient = useQueryClient();
-  const router = useRouter();
-  const pathname = usePathname();
-  const createQueryString = useCreateQueryString();
+  const titlesColumns = useColumnsTitles(userId);
+  const [sorting, setSorting] = useState<SortingState>([]);
   const {
     data: savedSearchJobsData,
     hasNextPage,
@@ -43,40 +49,73 @@ export default function JobTitles({ userId }: JobDetailsLayoutProps) {
     },
   });
 
+  const flatData = useMemo(
+    () => savedSearchJobsData?.pages?.flatMap((page) => page) ?? [],
+    [savedSearchJobsData],
+  );
+
+  const table = useReactTable({
+    data: flatData,
+    columns: titlesColumns,
+    state: {
+      sorting,
+    },
+    getCoreRowModel: getCoreRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    onSortingChange: setSorting,
+    manualPagination: true,
+  });
+
   return (
     <div>
       {savedSearchJobsData?.pages && (
         <Table>
           <TableHeader>
-            <TableRow>
-              <TableHead className="dark:text-white">Role</TableHead>
-            </TableRow>
+            {table.getHeaderGroups().map((headersGroup) => (
+              <TableRow key={headersGroup.id}>
+                {headersGroup.headers.map((column) => (
+                  <TableHead
+                    className={cn(
+                      column.column.getCanSort() &&
+                        "cursor-pointer select-none",
+                      "dark:text-white",
+                    )}
+                    onClick={column.column.getToggleSortingHandler()}
+                    title={
+                      column.column.getCanSort()
+                        ? column.column.getNextSortingOrder() === "asc"
+                          ? "Sort ascending"
+                          : column.column.getNextSortingOrder() === "desc"
+                            ? "Sort descending"
+                            : "Clear sort"
+                        : undefined
+                    }
+                    key={column.id}
+                  >
+                    {flexRender(
+                      column.column.columnDef.header,
+                      column.getContext(),
+                    )}
+                    {{
+                      asc: " 🔼",
+                      desc: " 🔽",
+                    }[column.column.getIsSorted() as string] ?? null}
+                  </TableHead>
+                ))}
+              </TableRow>
+            ))}
           </TableHeader>
           <TableBody className="block h-[700px] w-full overflow-y-scroll">
-            {savedSearchJobsData.pages.map((page) =>
-              page.map((job) => (
-                <TableRow key={job.id}>
-                  <TableCell>
-                    <Button
-                      variant="link"
-                      className="text-left"
-                      onClick={async () => {
-                        router.push(
-                          pathname +
-                            "?" +
-                            createQueryString({ jobId: job.id, userId }),
-                        );
-                        await queryClient.invalidateQueries({
-                          queryKey: ["job", job.id, userId],
-                        });
-                      }}
-                    >
-                      {job.job.title}
-                    </Button>
+            {table.getRowModel().rows.map((row) => (
+              <TableRow key={row.id}>
+                {row.getVisibleCells().map((cell) => (
+                  <TableCell key={cell.id}>
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </TableCell>
-                </TableRow>
-              )),
-            )}
+                ))}
+              </TableRow>
+            ))}
           </TableBody>
           <TableFooter>
             <TableRow>

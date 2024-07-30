@@ -48,7 +48,6 @@ export default function JobsTable({ userId }: JobsTableProps) {
   } = useInfiniteQuery({
     queryKey: ["jobs", userId],
     queryFn: ({ pageParam }: { pageParam: number }) =>
-      // change this to a query that would allowe filtering and ordering data
       getAllJobs(userId, pageParam),
     initialPageParam: 0,
     getNextPageParam: (lastPage, _pages) => {

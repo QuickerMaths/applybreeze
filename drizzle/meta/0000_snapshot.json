@@ -1,7 +1,7 @@
 {
-  "id": "f927f68f-2540-4d34-85b9-2b188b6422e3",
+  "id": "83a3facb-0670-4dce-b47e-047aa2539dd0",
   "prevId": "00000000-0000-0000-0000-000000000000",
-  "version": "6",
+  "version": "7",
   "dialect": "postgresql",
   "tables": {
     "public.Applications": {
@@ -16,28 +16,43 @@
         },
         "user_id": {
           "name": "user_id",
-          "type": "integer",
+          "type": "varchar(255)",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "job_id": {
           "name": "job_id",
           "type": "integer",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
-        "status": {
-          "name": "status",
-          "type": "varchar(50)",
+        "applicationStatus": {
+          "name": "applicationStatus",
+          "type": "applicationStatus",
+          "typeSchema": "public",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true,
+          "default": "'saved'"
+        },
+        "saved_at": {
+          "name": "saved_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
         },
         "applied_date": {
           "name": "applied_date",
           "type": "timestamp with time zone",
           "primaryKey": false,
-          "notNull": false,
-          "default": "now()"
+          "notNull": false
         }
       },
       "indexes": {},
@@ -72,8 +87,8 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "public.JobFilters": {
-      "name": "JobFilters",
+    "public.JobSearchRequest": {
+      "name": "JobSearchRequest",
       "schema": "",
       "columns": {
         "id": {
@@ -84,45 +99,29 @@
         },
         "user_id": {
           "name": "user_id",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "saved_search_id": {
+          "name": "saved_search_id",
           "type": "integer",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
-        "title": {
-          "name": "title",
-          "type": "varchar(255)",
+        "status": {
+          "name": "status",
+          "type": "status",
+          "typeSchema": "public",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true,
+          "default": "'pending'"
         },
-        "city": {
-          "name": "city",
-          "type": "varchar(255)",
+        "expires_at": {
+          "name": "expires_at",
+          "type": "timestamp with time zone",
           "primaryKey": false,
-          "notNull": false
-        },
-        "state": {
-          "name": "state",
-          "type": "varchar(255)",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "country": {
-          "name": "country",
-          "type": "varchar(255)",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "seniority_level": {
-          "name": "seniority_level",
-          "type": "varchar(255)",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "keywords": {
-          "name": "keywords",
-          "type": "varchar(255)",
-          "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "created_at": {
           "name": "created_at",
@@ -134,12 +133,25 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "JobFilters_user_id_Users_id_fk": {
-          "name": "JobFilters_user_id_Users_id_fk",
-          "tableFrom": "JobFilters",
+        "JobSearchRequest_user_id_Users_id_fk": {
+          "name": "JobSearchRequest_user_id_Users_id_fk",
+          "tableFrom": "JobSearchRequest",
           "tableTo": "Users",
           "columnsFrom": [
             "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "JobSearchRequest_saved_search_id_SavedSearches_id_fk": {
+          "name": "JobSearchRequest_saved_search_id_SavedSearches_id_fk",
+          "tableFrom": "JobSearchRequest",
+          "tableTo": "SavedSearches",
+          "columnsFrom": [
+            "saved_search_id"
           ],
           "columnsTo": [
             "id"
@@ -177,7 +189,8 @@
           "name": "salary",
           "type": "varchar(255)",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true,
+          "default": "'Unknown'"
         },
         "country": {
           "name": "country",
@@ -189,7 +202,7 @@
           "name": "source",
           "type": "varchar(255)",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "source_url": {
           "name": "source_url",
@@ -201,7 +214,8 @@
           "name": "seniority_level",
           "type": "varchar(255)",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true,
+          "default": "'Unknown'"
         },
         "company_name": {
           "name": "company_name",
@@ -227,8 +241,8 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "public.Users": {
-      "name": "Users",
+    "public.SavedSearchJobs": {
+      "name": "SavedSearchJobs",
       "schema": "",
       "columns": {
         "id": {
@@ -237,20 +251,148 @@
           "primaryKey": true,
           "notNull": true
         },
+        "saved_search_id": {
+          "name": "saved_search_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "job_id": {
+          "name": "job_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "SavedSearchJobs_saved_search_id_SavedSearches_id_fk": {
+          "name": "SavedSearchJobs_saved_search_id_SavedSearches_id_fk",
+          "tableFrom": "SavedSearchJobs",
+          "tableTo": "SavedSearches",
+          "columnsFrom": [
+            "saved_search_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "SavedSearchJobs_job_id_Jobs_id_fk": {
+          "name": "SavedSearchJobs_job_id_Jobs_id_fk",
+          "tableFrom": "SavedSearchJobs",
+          "tableTo": "Jobs",
+          "columnsFrom": [
+            "job_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "public.SavedSearches": {
+      "name": "SavedSearches",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "role": {
+          "name": "role",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "city": {
+          "name": "city",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "country": {
+          "name": "country",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "seniority_level": {
+          "name": "seniority_level",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "saved_at": {
+          "name": "saved_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "SavedSearches_user_id_Users_id_fk": {
+          "name": "SavedSearches_user_id_Users_id_fk",
+          "tableFrom": "SavedSearches",
+          "tableTo": "Users",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "public.Users": {
+      "name": "Users",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "varchar(255)",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "first_name": {
+          "name": "first_name",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "last_name": {
+          "name": "last_name",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false
+        },
         "username": {
           "name": "username",
           "type": "varchar(255)",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "email": {
           "name": "email",
-          "type": "varchar(255)",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "password_hash": {
-          "name": "password_hash",
           "type": "varchar(255)",
           "primaryKey": false,
           "notNull": true
@@ -261,19 +403,19 @@
           "primaryKey": false,
           "notNull": false,
           "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
         }
       },
       "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
-        "Users_username_unique": {
-          "name": "Users_username_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "username"
-          ]
-        },
         "Users_email_unique": {
           "name": "Users_email_unique",
           "nullsNotDistinct": false,
@@ -284,8 +426,38 @@
       }
     }
   },
-  "enums": {},
+  "enums": {
+    "public.applicationStatus": {
+      "name": "applicationStatus",
+      "schema": "public",
+      "values": [
+        "saved",
+        "applied",
+        "interviewing",
+        "rejected",
+        "accepted"
+      ]
+    },
+    "public.status": {
+      "name": "status",
+      "schema": "public",
+      "values": [
+        "pending",
+        "completed",
+        "failed"
+      ]
+    },
+    "public.jobSources": {
+      "name": "jobSources",
+      "schema": "public",
+      "values": [
+        "indeed",
+        "linkedin"
+      ]
+    }
+  },
   "schemas": {},
+  "sequences": {},
   "_meta": {
     "columns": {},
     "schemas": {},

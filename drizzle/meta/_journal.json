@@ -8,6 +8,20 @@
       "when": 1722376777402,
       "tag": "0000_harsh_falcon",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1724247455100,
+      "tag": "0001_safe_guardsmen",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1724247488173,
+      "tag": "0002_real_celestials",
+      "breakpoints": true
     }
   ]
 }

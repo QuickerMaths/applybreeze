@@ -43,7 +43,7 @@ export default function StatusSelect({ userId, jobId }: StatusSelectProps) {
 
   const mutation = useMutation({
     mutationFn: (applicationStatus: ApplicationStatusType) =>
-      updateApplicationStatus(jobId, applicationStatus),
+      updateApplicationStatus(userId, jobId, applicationStatus),
     onSettled: async () => {
       await queryClient.invalidateQueries({
         queryKey: ["jobs", userId],

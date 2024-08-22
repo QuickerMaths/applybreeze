@@ -3,23 +3,8 @@
 import { Applications } from "~/server/db/schema";
 import { db } from "~/server/db";
 import { eq } from "drizzle-orm";
-import { ApplicationStatusType } from "~/types/applications";
-
-export async function createApplication(userId: string, jobId: number) {
-  const applicationId = await db
-    .insert(Applications)
-    .values({
-      userId,
-      jobId,
-    })
-    .returning({ id: Applications.id });
-
-  if (!applicationId[0]?.id) {
-    throw new Error("Could not create application");
-  }
-
-  return applicationId[0].id;
-}
+import type { ApplicationStatusType } from "~/types/applications";
+import { updateAnalytics } from "./analytics-queries";
 
 export async function getApplications(
   userId: string,
@@ -40,12 +25,6 @@ export async function getApplications(
   });
 }
 
-export async function deleteApplication(applicationId: number) {
-  return await db
-    .delete(Applications)
-    .where(eq(Applications.id, applicationId));
-}
-
 export async function getApplicationStatus(jobId: number) {
   return await db.query.Applications.findFirst({
     where: (application, { eq }) => eq(application.jobId, jobId),
@@ -53,13 +32,32 @@ export async function getApplicationStatus(jobId: number) {
 }
 
 export async function updateApplicationStatus(
+  userId: string,
   applicationId: number,
   status: ApplicationStatusType,
 ) {
-  await db
+  const appliedDate = await db
     .update(Applications)
     .set({
       status,
     })
-    .where(eq(Applications.id, applicationId));
+    .where(eq(Applications.id, applicationId))
+    .returning({ appliedDate: Applications.appliedDate });
+
+  if (status === "saved" && appliedDate[0]) {
+    const applicationMonth =
+      new Date(appliedDate[0].toLocaleString()).getMonth() + 1;
+    const applicationYear = new Date(
+      appliedDate[0].toLocaleString(),
+    ).getFullYear();
+
+    await updateAnalytics(userId, applicationMonth, applicationYear, -1);
+  }
+
+  await updateAnalytics(
+    userId,
+    new Date().getMonth(),
+    new Date().getFullYear(),
+    1,
+  );
 }

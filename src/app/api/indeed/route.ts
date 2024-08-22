@@ -9,6 +9,7 @@ import {
     updateSearchRequestStatus,
 } from "~/server/queries/request-queries";
 import type { NextRequest } from "next/server";
+import { updateAnalytics } from "~/server/queries/analytics-queries";
 
 const client = new ApifyClient({
     token: process.env.APIFY_TOKEN,
@@ -47,11 +48,19 @@ export async function POST(request: NextRequest): Promise<Response> {
         const validatedJobs = validateJobs(items, indeedJobSchema);
 
         if (validatedJobs.length > 0) {
-            await saveJobs({
+            const { jobsCount } = await saveJobs({
                 jobs: validatedJobs,
                 userId,
                 savedSearchId,
             });
+
+            await updateAnalytics(
+                userId,
+                new Date().getMonth(),
+                new Date().getFullYear(),
+                0,
+                jobsCount,
+            );
 
             await updateSearchRequestStatus(requestId, "completed");
             return new Response("OK", { status: 200 });

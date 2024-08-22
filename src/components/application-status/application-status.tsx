@@ -21,7 +21,10 @@ interface ApplicationStatusProps {
   userId: string;
 }
 
-export default function ApplicationStatus({ jobId }: ApplicationStatusProps) {
+export default function ApplicationStatus({
+  userId,
+  jobId,
+}: ApplicationStatusProps) {
   const queryClient = useQueryClient();
   const { data, isLoading, isRefetching } = useQuery({
     queryKey: ["applicationStatus", jobId],
@@ -33,7 +36,7 @@ export default function ApplicationStatus({ jobId }: ApplicationStatusProps) {
       if (!data?.id) {
         return;
       }
-      return await updateApplicationStatus(data.id, status);
+      return await updateApplicationStatus(userId, data.id, status);
     },
     onSettled: async () => {
       await queryClient.invalidateQueries({

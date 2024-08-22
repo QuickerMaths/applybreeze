@@ -106,8 +106,8 @@ export const ApplicationsAnalytics = pgTable("ApplicationsAnalytics", {
         .references(() => Users.id),
     month: integer("month").notNull(),
     year: integer("year").notNull(),
-    savedApplications: integer("saved_applications").notNull(),
-    appliedApplications: integer("applied_applications").notNull(),
+    savedApplications: integer("saved_applications").notNull().default(0),
+    appliedApplications: integer("applied_applications").notNull().default(0),
 });
 
 export const userRelations = relations(Users, ({ many }) => ({

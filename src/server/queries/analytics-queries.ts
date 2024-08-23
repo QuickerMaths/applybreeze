@@ -1,6 +1,6 @@
 import { db } from "~/server/db/index";
 import { ApplicationsAnalytics } from "../db/schema";
-import { and, asc, eq, gte, or } from "drizzle-orm";
+import { and, asc, desc, eq, gte, or } from "drizzle-orm";
 
 export async function getAnalytics(userId: string, months: number) {
   const currentYear = new Date().getFullYear();
@@ -22,7 +22,7 @@ export async function getAnalytics(userId: string, months: number) {
         and(eq(ApplicationsAnalytics.userId, userId)),
       ),
     )
-    .orderBy(asc(ApplicationsAnalytics.year), asc(ApplicationsAnalytics.month))
+    .orderBy(desc(ApplicationsAnalytics.year), asc(ApplicationsAnalytics.month))
     .limit(months);
 }
 

@@ -12,7 +12,7 @@ export async function createWeeklyGoal(userId: string, goal = 10) {
 }
 
 export async function updateWeeklyGoal(userId: string) {
-  const existingGoal = await findWeeklyGoal(userId);
+  const existingGoal = await getWeeklyGoal(userId);
 
   if (!existingGoal) {
     await createWeeklyGoal(userId);
@@ -36,7 +36,7 @@ export async function updateWeeklyGoal(userId: string) {
 }
 
 export async function changeWeeklyGoal(userId: string, newGoal: number) {
-  const existingGoal = await findWeeklyGoal(userId);
+  const existingGoal = await getWeeklyGoal(userId);
 
   if (!existingGoal) {
     return await createWeeklyGoal(userId, newGoal);
@@ -51,7 +51,7 @@ export async function changeWeeklyGoal(userId: string, newGoal: number) {
   return updatedGoal[0];
 }
 
-async function findWeeklyGoal(userId: string) {
+export async function getWeeklyGoal(userId: string) {
   const weeklyGoal = await db.query.WeeklyGoal.findFirst({
     where: (goal, { eq }) => eq(goal.userId, userId),
     columns: {

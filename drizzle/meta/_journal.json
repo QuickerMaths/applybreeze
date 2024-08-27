@@ -22,6 +22,20 @@
       "when": 1724247488173,
       "tag": "0002_real_celestials",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1724433733077,
+      "tag": "0003_many_magneto",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1724434076211,
+      "tag": "0004_glossy_lila_cheney",
+      "breakpoints": true
     }
   ]
 }

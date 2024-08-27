@@ -41,14 +41,14 @@ export function RadialChartComponent({ userId }: RadialChartComponentProps) {
   ];
 
   return (
-    <Card className="flex w-[20%] flex-col">
+    <Card className="flex w-[25%] flex-col">
       <CardHeader className="items-center pb-5">
         <CardTitle>Weekly goal</CardTitle>
       </CardHeader>
       <CardContent className="flex flex-1 items-center pb-0">
         <ChartContainer
           config={chartConfig}
-          className="mx-auto aspect-square w-full max-w-[250px]"
+          className="mx-auto aspect-square w-full max-w-[200px]"
         >
           <RadialBarChart
             data={chartData}

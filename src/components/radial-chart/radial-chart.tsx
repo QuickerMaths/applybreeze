@@ -36,7 +36,10 @@ export function RadialChartComponent({ userId }: RadialChartComponentProps) {
     {
       month: new Date().getMonth(),
       progress: weeklyGoal?.progress,
-      goal: (weeklyGoal?.goal ?? 10) - (weeklyGoal?.progress ?? 0),
+      goal:
+        weeklyGoal?.goal - weeklyGoal?.progress > 0
+          ? weeklyGoal?.goal - weeklyGoal?.progress
+          : 0,
     },
   ];
 

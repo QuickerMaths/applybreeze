@@ -42,6 +42,9 @@ export default function ApplicationStatus({
       await queryClient.invalidateQueries({
         queryKey: ["applicationStatus", jobId],
       });
+      await queryClient.invalidateQueries({
+        queryKey: ["weeklyGoal", userId],
+      });
     },
   });
 

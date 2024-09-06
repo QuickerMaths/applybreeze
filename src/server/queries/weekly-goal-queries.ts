@@ -65,3 +65,8 @@ export async function getWeeklyGoal(userId: string) {
 
     return weeklyGoal;
 }
+
+export async function restartWeeklyGoal() {
+    // eslint-disable-next-line drizzle/enforce-update-with-where
+    await db.update(WeeklyGoal).set({ progress: 0 });
+}

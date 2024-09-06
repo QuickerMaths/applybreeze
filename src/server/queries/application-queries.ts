@@ -5,59 +5,69 @@ import { db } from "~/server/db";
 import { eq } from "drizzle-orm";
 import type { ApplicationStatusType } from "~/types/applications";
 import { updateAnalytics } from "./analytics-queries";
+import { updateWeeklyGoal } from "./weekly-goal-queries";
 
 export async function getApplications(
-  userId: string,
-  pageSize = 10,
-  cursor?: number,
+    userId: string,
+    pageSize = 10,
+    cursor?: number,
 ) {
-  return await db.query.Applications.findMany({
-    where: (application, { eq, and, lt }) =>
-      and(
-        eq(application.userId, userId),
-        cursor ? lt(application.id, cursor) : undefined,
-      ),
-    with: {
-      job: true,
-    },
-    limit: pageSize,
-    orderBy: (application, { desc }) => desc(application.id),
-  });
+    return await db.query.Applications.findMany({
+        where: (application, { eq, and, lt }) =>
+            and(
+                eq(application.userId, userId),
+                cursor ? lt(application.id, cursor) : undefined,
+            ),
+        with: {
+            job: true,
+        },
+        limit: pageSize,
+        orderBy: (application, { desc }) => desc(application.id),
+    });
 }
 
 export async function getApplicationStatus(jobId: number) {
-  return await db.query.Applications.findFirst({
-    where: (application, { eq }) => eq(application.jobId, jobId),
-  });
+    return await db.query.Applications.findFirst({
+        where: (application, { eq }) => eq(application.jobId, jobId),
+    });
 }
 
 export async function updateApplicationStatus(
-  userId: string,
-  applicationId: number,
-  status: ApplicationStatusType,
+    userId: string,
+    applicationId: number,
+    status: ApplicationStatusType,
 ) {
-  const appliedDate = await db
-    .update(Applications)
-    .set({
-      status,
-    })
-    .where(eq(Applications.id, applicationId))
-    .returning({ appliedDate: Applications.appliedDate });
+    // check if already applied
+    const date = await db.query.Applications.findFirst({
+        where: (application, { eq }) => eq(application.id, applicationId),
+    });
 
-  if (status === "saved" && appliedDate[0]) {
-    const applicationMonth =
-      new Date(appliedDate[0].toLocaleString()).getMonth() + 1;
-    const applicationYear = new Date(
-      appliedDate[0].toLocaleString(),
-    ).getFullYear();
+    if (date?.appliedDate) {
+        // if not update application status, analytics and weeklygoal
+        const application = await db
+            .update(Applications)
+            .set({ status })
+            .where(eq(Applications.id, applicationId))
+            .returning({ id: Applications.id });
 
-    await updateAnalytics(userId, applicationMonth, applicationYear, -1);
-  }
+        return application[0];
+    } else {
+        // if yes update application status
+        const application = await db
+            .update(Applications)
+            .set({ status, appliedDate: new Date() })
+            .where(eq(Applications.id, applicationId))
+            .returning({ id: Applications.id });
 
-  await updateAnalytics(
-    userId,
-    new Date().getMonth(),
-    new Date().getFullYear(),
-    1,
-  );
+        await updateAnalytics(
+            userId,
+            new Date().getMonth(),
+            new Date().getFullYear(),
+            1,
+        );
+
+        await updateWeeklyGoal(userId);
+
+        return application[0];
+    }
 }
